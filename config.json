@@ -6,7 +6,7 @@
       "settings": {
         "clients": [
           {
-            "id": "ba0e3984-ccc9-48a3-8074-b2f507f41ce8",
+            "id": "6be5f32c-3bed-4012-9e7f-dd978c4f8078",
             "level": 0
           }
         ],
@@ -16,7 +16,7 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/tg-@nkka404"
+          "path": "/ahs93"
         }
       }
     }
