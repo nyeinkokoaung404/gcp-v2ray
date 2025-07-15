@@ -34,7 +34,7 @@ This project allows you to deploy a **VLESS proxy** server over **WebSocket** us
       "settings": {
         "clients": [
           {
-            "id": "a3b7de87-b46f-4dcf-b6ed-5bf5ebe83167",
+            "id": "ca53c3b5-9b3d-4df8-a0dc-818f482bd810",
             "level": 0
           }
         ],
@@ -43,7 +43,7 @@ This project allows you to deploy a **VLESS proxy** server over **WebSocket** us
       "streamSettings": {
         "network": "ws",
         "wsSettings": {
-          "path": "/t.me/nkka404"
+          "path": "/t.me/ahs999"
         }
       }
     }
@@ -65,20 +65,20 @@ This project allows you to deploy a **VLESS proxy** server over **WebSocket** us
 ### Step 1: Build Docker Image
 
 ```bash
-docker build -t gcr.io/YOUR_PROJECT_ID/vless-ws .
+docker build -t gcr.io/stable-matter-466019-k6/vless-ws .
 ```
 
 ### Step 2: Push to Container Registry
 
 ```bash
-docker push gcr.io/YOUR_PROJECT_ID/vless-ws
+docker push gcr.io/stable-matter-466019-k6/vless-ws
 ```
 
 ### Step 3: Deploy to Google Cloud Run
 
 ```bash
 gcloud run deploy vless-ws \
-  --image gcr.io/YOUR_PROJECT_ID/vless-ws \
+  --image gcr.io/stable-matter-466019-k6/vless-ws \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
@@ -108,12 +108,12 @@ Use the following settings in your client app:
 | Setting    | Value                                  |
 | ---------- | -------------------------------------- |
 | Protocol   | VLESS                                  |
-| Address    | `your.domain.com`                      |
+| Address    | `m.googleapis.com`                      |
 | Port       | `443` (HTTPS)                          |
-| UUID       | `a3b7de87-b46f-4dcf-b6ed-5bf5ebe83167` |
+| UUID       | `ca53c3b5-9b3d-4df8-a0dc-818f482bd810` |
 | Encryption | none                                   |
 | Transport  | WebSocket (WS)                         |
-| WS Path    | `/notragnar`                           |
+| WS Path    | `/ahs93`                           |
 | TLS        | Yes (via Google CDN)                   |
 
 ---
@@ -141,10 +141,6 @@ Use the following settings in your client app:
 This project is licensed under the **MIT License**.
 
 ---
-
-## 👤 Author
-
-Made with ❤️ by [404\2.0](https://t.me/nkka404)
 
 ---
 
