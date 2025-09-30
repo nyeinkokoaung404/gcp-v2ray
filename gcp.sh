@@ -4,7 +4,7 @@
 PROJECT_ID=$(gcloud config get-value project)
 REGION="us-central1"
 SERVICE_NAME="gcp-channel-404"
-USERNAME="Channel404"
+UUID="ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
 HOST_DOMAIN="m.googleapis.com"
 
 # Telegram Configuration
@@ -30,8 +30,8 @@ gcloud run deploy ${SERVICE_NAME} \
   --platform managed \
   --region ${REGION} \
   --allow-unauthenticated \
-  --cpu 2 \
-  --memory 2Gi \
+  --cpu 4 \
+  --memory 16Gi \
   --max-instances 10
 
 # Get the service URL
@@ -41,7 +41,8 @@ SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} --region ${REGION} --
 DOMAIN=$(echo $SERVICE_URL | sed 's|https://||')
 
 # Create Trojan share link
-TROJAN_LINK="trojan://${USERNAME}@${HOST_DOMAIN}:443?path=%2F%40channel404&security=tls&alpn=http%2F1.1&host=${DOMAIN}&fp=randomized&type=ws&sni=${HOST_DOMAIN}#${SERVICE_NAME}"
+#VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=http%2F1.1&host=${DOMAIN}&fp=randomized&type=ws&sni=${HOST_DOMAIN}#${SERVICE_NAME}"
+VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host==${DOMAIN}&fp=randomized&type=ws&sni==${DOMAIN}#${SERVICE_NAME}"
 
 # Create the message for Telegram
 MESSAGE="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -50,14 +51,14 @@ Service: ${SERVICE_NAME}
 Region: ${REGION}
 URL: ${SERVICE_URL}
 
-${TROJAN_LINK}
+```${VLESS_LINK}```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Display locally
 echo "$MESSAGE"
 
 # Save to file
-echo "$MESSAGE" > deployment-info.txt
+#echo "$MESSAGE" > deployment-info.txt
 
 # Function to send message to Telegram
 send_to_telegram() {
