@@ -29,10 +29,10 @@ gcloud run deploy ${SERVICE_NAME} \
   --image gcr.io/${PROJECT_ID}/gcp-v2ray-image \
   --platform managed \
   --region ${REGION} \
-  --allow-unauthenticated \
-  --cpu 4 \
-  --memory 16Gi \
-  --max-instances 10
+  --allow-unauthenticated# \
+  #--cpu 4 \
+  #--memory 16Gi \
+  #--max-instances 10
 
 # Get the service URL
 SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} --region ${REGION} --format 'value(status.url)')
