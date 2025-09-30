@@ -29,7 +29,7 @@ gcloud run deploy ${SERVICE_NAME} \
   --image gcr.io/${PROJECT_ID}/gcp-v2ray-image \
   --platform managed \
   --region ${REGION} \
-  --allow-unauthenticated# \
+  --allow-unauthenticated
   #--cpu 4 \
   #--memory 16Gi \
   #--max-instances 10
