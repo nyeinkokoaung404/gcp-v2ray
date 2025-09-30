@@ -325,6 +325,47 @@ setup_resource_optimization() {
     setup_auto_scaling
 }
 
+# Function to escape special characters for Telegram
+escape_telegram_text() {
+    local text="$1"
+    # Escape characters that have special meaning in Telegram Markdown
+    text="${text//\*/\\*}"
+    text="${text//_/\\_}"
+    text="${text//\[/\\[}"
+    text="${text//\]/\\]}"
+    text="${text//\(/\\(}"
+    text="${text//\)/\\)}"
+    text="${text//\~/\\~}"
+    text="${text//\`/\\\`}"
+    text="${text//>/\\>}"
+    text="${text//#/\\#}"
+    text="${text//+/\\+}"
+    text="${text//-/\\-}"
+    text="${text//=/\\=}"
+    text="${text//|/\\|}"
+    text="${text//\{/\\{}"
+    text="${text//\}/\\}}"
+    text="${text//\./\\\.}"
+    text="${text//\!/\\!}"
+    echo "$text"
+}
+
+# Telegram notification function with proper formatting
+send_telegram_message() {
+    local text="$1"
+    local escaped_text=$(escape_telegram_text "$text")
+    
+    curl -s -X POST \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"chat_id\": \"${TELEGRAM_CHANNEL_ID}\",
+            \"text\": \"$escaped_text\",
+            \"disable_web_page_preview\": true,
+            \"parse_mode\": \"MarkdownV2\"
+        }" \
+        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" > /dev/null 2>&1
+}
+
 # Configuration with user input
 echo "🚀 GCP Cloud Run V2Ray Deployment Script"
 echo "=========================================="
@@ -419,15 +460,14 @@ print_status "Service deployed successfully: $SERVICE_URL"
 # Generate Vless link
 VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host=${DOMAIN}&fp=randomized&type=ws&sni=${DOMAIN}#${SERVICE_NAME}"
 
-# Create message with MARKDOWN format
-read -r -d '' MESSAGE << EOM
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Create message for Telegram (without code blocks for vless link)
+read -r -d '' TELEGRAM_MESSAGE << EOM
 ✅ *Cloud Run Deploy Success*
 
-*Service:* \`${SERVICE_NAME}\`
-*Region:* \`${REGION}\`
-*Project:* \`${PROJECT_ID}\`
-*URL:* \`${SERVICE_URL}\`
+*Service:* ${SERVICE_NAME}
+*Region:* ${REGION}
+*Project:* ${PROJECT_ID}
+*URL:* ${SERVICE_URL}
 
 *Resource Configuration:*
 - CPU: ${CPU} vCPU
@@ -436,44 +476,57 @@ read -r -d '' MESSAGE << EOM
 - Concurrency: ${CONCURRENCY}
 
 *Vless Configuration:*
-\`\`\`
 ${VLESS_LINK}
-\`\`\`
 
 *Usage:* Copy the above link and import to your V2Ray client
+EOM
+
+# Create message for local console (with better formatting)
+read -r -d '' CONSOLE_MESSAGE << EOM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Cloud Run Deploy Success
+
+Service: ${SERVICE_NAME}
+Region: ${REGION}
+Project: ${PROJECT_ID}
+URL: ${SERVICE_URL}
+
+Resource Configuration:
+- CPU: ${CPU} vCPU
+- Memory: ${MEMORY}
+- Max Instances: ${MAX_INSTANCES}
+- Concurrency: ${CONCURRENCY}
+
+Vless Configuration:
+${VLESS_LINK}
+
+Usage: Copy the above link and import to your V2Ray client
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOM
 
 # Display locally
 echo ""
 print_status "Deployment Information:"
-echo "$MESSAGE"
+echo "$CONSOLE_MESSAGE"
 
 # Save to file
-echo "$MESSAGE" > "deployment-info-${SERVICE_NAME}.txt"
+echo "$CONSOLE_MESSAGE" > "deployment-info-${SERVICE_NAME}.txt"
 print_status "Deployment info saved to: deployment-info-${SERVICE_NAME}.txt"
-
-# Telegram notification function with MARKDOWN
-send_telegram_message() {
-    local text="$1"
-    curl -s -X POST \
-        -H "Content-Type: application/json" \
-        -d "{
-            \"chat_id\": \"${TELEGRAM_CHANNEL_ID}\",
-            \"text\": \"$text\",
-            \"disable_web_page_preview\": true,
-            \"parse_mode\": \"MARKDOWN\"
-        }" \
-        "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage"
-}
 
 # Send to Telegram
 print_status "Sending deployment info to Telegram..."
-if send_telegram_message "$MESSAGE"; then
+if send_telegram_message "$TELEGRAM_MESSAGE"; then
     print_status "✅ Successfully sent to Telegram channel: ${TELEGRAM_CHANNEL_ID}"
 else
     print_error "❌ Failed to send to Telegram channel"
     print_warning "Please check your bot token and channel ID"
+    
+    # Show the actual message that would be sent for debugging
+    echo ""
+    print_warning "Message that was attempted to send:"
+    echo "----------------------------------------"
+    echo "$TELEGRAM_MESSAGE"
+    echo "----------------------------------------"
 fi
 
 # Display final information
