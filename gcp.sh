@@ -41,7 +41,7 @@ SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} --region ${REGION} --
 DOMAIN=$(echo $SERVICE_URL | sed 's|https://||')
 
 # Create Trojan share link
-TROJAN_LINK="trojan://${USERNAME}@${HOST_DOMAIN}:443?path=%2F%40n4vpn&security=tls&alpn=http%2F1.1&host=${DOMAIN}&fp=randomized&type=ws&sni=${HOST_DOMAIN}#${SERVICE_NAME}"
+TROJAN_LINK="trojan://${USERNAME}@${HOST_DOMAIN}:443?path=%2F%40channel404&security=tls&alpn=http%2F1.1&host=${DOMAIN}&fp=randomized&type=ws&sni=${HOST_DOMAIN}#${SERVICE_NAME}"
 
 # Create the message for Telegram
 MESSAGE="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
