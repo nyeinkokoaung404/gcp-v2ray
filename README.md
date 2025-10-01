@@ -113,7 +113,7 @@ Use the following settings in your client app:
 | UUID       | `a3b7de87-b46f-4dcf-b6ed-5bf5ebe83167` |
 | Encryption | none                                   |
 | Transport  | WebSocket (WS)                         |
-| WS Path    | `/notragnar`                           |
+| WS Path    | `/tg-@nkka404`                         |
 | TLS        | Yes (via Google CDN)                   |
 
 ---
