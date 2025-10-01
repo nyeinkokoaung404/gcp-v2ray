@@ -30,9 +30,9 @@ gcloud run deploy ${SERVICE_NAME} \
   --platform managed \
   --region ${REGION} \
   --allow-unauthenticated \
-  --cpu 4 \
-  --memory 16Gi \
-  --max-instances 3
+  --cpu 2 \
+  --memory 4Gi
+  #--max-instances 3
 
 # Get the service URL
 SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} --region ${REGION} --format 'value(status.url)')
@@ -44,17 +44,16 @@ DOMAIN=$(echo $SERVICE_URL | sed 's|https://||')
 VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host==${DOMAIN}&fp=randomized&type=ws&sni==${DOMAIN}#${SERVICE_NAME}"
 
 # Create the message for Telegram
-MESSAGE="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MESSAGE="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ *Cloud Run Deploy Success*
-*Service:* ${SERVICE_NAME}
-*Region:* ${REGION}
-*URL:* ${SERVICE_URL}
+*Service:* \`${SERVICE_NAME}\`
+*Region:* \`${REGION}\`
+*URL:* \`${SERVICE_URL}\`
 
-${VLESS_LINK}
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Display locally
 echo "$MESSAGE"
