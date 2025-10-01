@@ -41,10 +41,10 @@ SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} --region ${REGION} --
 DOMAIN=$(echo $SERVICE_URL | sed 's|https://||')
 
 # Create Vless share link
-VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host==${DOMAIN}&fp=randomized&type=ws&sni==${DOMAIN}#${SERVICE_NAME}"
+VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host=${DOMAIN}&fp=randomized&type=ws&sni=${DOMAIN}#${SERVICE_NAME}"
 
 # Create the message for Telegram
-MESSAGE="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MESSAGE="━━━━━━━━━━━━━━━━━━━━
 ✅ *Cloud Run Deploy Success*
 *Service:* \`${SERVICE_NAME}\`
 *Region:* \`${REGION}\`
@@ -53,7 +53,7 @@ MESSAGE="━━━━━━━━━━━━━━━━━━━━━━━�
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+━━━━━━━━━━━━━━━━━━━━"
 
 # Display locally
 echo "$MESSAGE"
