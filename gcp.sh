@@ -100,6 +100,7 @@ get_user_input() {
     # UUID
     while true; do
         read -p "Enter UUID: " UUID
+        UUID=${UUID:-"ba0e3984-ccc9-48a3-8074-b2f507f41ce8"}
         if validate_uuid "$UUID"; then
             break
         fi
@@ -276,7 +277,7 @@ main() {
     
     # Create message
     MESSAGE="━━━━━━━━━━━━━━━━━━━━
-✅ *Cloud Run Deploy Success*
+*Cloud Run Deploy Success* ✅
 *Project:* \`${PROJECT_ID}\`
 *Service:* \`${SERVICE_NAME}\`
 *Region:* \`${REGION}\`
@@ -285,6 +286,8 @@ main() {
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
+
+*Usage:* Copy the above link and import to your V2Ray client
 ━━━━━━━━━━━━━━━━━━━━"
     
     # Save to file
