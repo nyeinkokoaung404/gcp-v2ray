@@ -286,7 +286,6 @@ main() {
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-
 *Usage:* Copy the above link and import to your V2Ray client
 ━━━━━━━━━━━━━━━━━━━━"
     
