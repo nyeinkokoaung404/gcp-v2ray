@@ -257,15 +257,16 @@ select_resources() {
     info "Max Instances: $MAX_INSTANCES"
 }
 
-# Custom resource selection
+# Custom resource selection - FIXED VERSION
 select_custom_resources() {
     echo
     info "=== Custom Resource Configuration ==="
     
     # CPU selection
     while true; do
-        read -p "Enter CPU cores (1-8): " CPU
-        if [[ $CPU =~ ^[1-8]$ ]]; then
+        read -p "Enter CPU cores (1-8): " custom_cpu
+        if [[ $custom_cpu =~ ^[1-8]$ ]]; then
+            CPU="$custom_cpu"
             break
         else
             error "Please enter a number between 1-8"
@@ -711,6 +712,12 @@ main() {
     TELEGRAM_BOT_TOKEN=""
     TELEGRAM_CHANNEL_ID=""
     TELEGRAM_CHAT_ID=""
+    
+    # Initialize resource settings with defaults
+    CPU="2"
+    MEMORY="4Gi"
+    CONTAINER_CONCURRENCY=100
+    MAX_INSTANCES=20
     
     # Get user input
     select_region
