@@ -409,7 +409,7 @@ main() {
     # Create Vless share link
     VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host=${DOMAIN}&fp=randomized&type=ws&sni=${DOMAIN}#${SERVICE_NAME}"
     
-    # Create message
+    # Create telegram message
     MESSAGE="━━━━━━━━━━━━━━━━━━━━
 *Cloud Run Deploy Success* ✅
 *Project:* \`${PROJECT_ID}\`
@@ -420,17 +420,30 @@ main() {
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-*Usage:* Copy the above link and import to your V2Ray client
+*Usage:* __Copy the above link and import to your V2Ray client.__
+━━━━━━━━━━━━━━━━━━━━"
+
+    # Create console message
+    CONSOLE_MESSAGE="━━━━━━━━━━━━━━━━━━━━
+Cloud Run Deploy Success ✅
+Project: ${PROJECT_ID}
+Service: ${SERVICE_NAME}
+Region: ${REGION}
+URL: ${SERVICE_URL}
+
+${VLESS_LINK}
+
+Usage: Copy the above link and import to your V2Ray client.
 ━━━━━━━━━━━━━━━━━━━━"
     
     # Save to file
-    echo "$MESSAGE" > deployment-info.txt
+    echo "$CONSOLE_MESSAGE" > deployment-info.txt
     log "Deployment info saved to deployment-info.txt"
     
     # Display locally
     echo
     info "=== Deployment Information ==="
-    echo "$MESSAGE"
+    echo "$CONSOLE_MESSAGE"
     echo
     
     # Send to Telegram based on user selection
