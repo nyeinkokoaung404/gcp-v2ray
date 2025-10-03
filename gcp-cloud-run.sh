@@ -54,6 +54,15 @@ validate_channel_id() {
     return 0
 }
 
+# Function to validate Chat ID (for bot private messages)
+validate_chat_id() {
+    if [[ ! $1 =~ ^-?[0-9]+$ ]]; then
+        error "Invalid Chat ID format"
+        return 1
+    fi
+    return 0
+}
+
 # Region selection function
 select_region() {
     echo
@@ -82,6 +91,64 @@ select_region() {
     info "Selected region: $REGION"
 }
 
+# Telegram destination selection
+select_telegram_destination() {
+    echo
+    info "=== Telegram Destination ==="
+    echo "1. Send to Channel only"
+    echo "2. Send to Bot private message only" 
+    echo "3. Send to both Channel and Bot"
+    echo "4. Don't send to Telegram"
+    echo
+    
+    while true; do
+        read -p "Select destination (1-4): " telegram_choice
+        case $telegram_choice in
+            1) 
+                TELEGRAM_DESTINATION="channel"
+                while true; do
+                    read -p "Enter Telegram Channel ID: " TELEGRAM_CHANNEL_ID
+                    if validate_channel_id "$TELEGRAM_CHANNEL_ID"; then
+                        break
+                    fi
+                done
+                break 
+                ;;
+            2) 
+                TELEGRAM_DESTINATION="bot"
+                while true; do
+                    read -p "Enter your Chat ID (for bot private message): " TELEGRAM_CHAT_ID
+                    if validate_chat_id "$TELEGRAM_CHAT_ID"; then
+                        break
+                    fi
+                done
+                break 
+                ;;
+            3) 
+                TELEGRAM_DESTINATION="both"
+                while true; do
+                    read -p "Enter Telegram Channel ID: " TELEGRAM_CHANNEL_ID
+                    if validate_channel_id "$TELEGRAM_CHANNEL_ID"; then
+                        break
+                    fi
+                done
+                while true; do
+                    read -p "Enter your Chat ID (for bot private message): " TELEGRAM_CHAT_ID
+                    if validate_chat_id "$TELEGRAM_CHAT_ID"; then
+                        break
+                    fi
+                done
+                break 
+                ;;
+            4) 
+                TELEGRAM_DESTINATION="none"
+                break 
+                ;;
+            *) echo "Invalid selection. Please enter a number between 1-4." ;;
+        esac
+    done
+}
+
 # User input function
 get_user_input() {
     echo
@@ -106,21 +173,15 @@ get_user_input() {
         fi
     done
     
-    # Telegram Bot Token
-    while true; do
-        read -p "Enter Telegram Bot Token: " TELEGRAM_BOT_TOKEN
-        if validate_bot_token "$TELEGRAM_BOT_TOKEN"; then
-            break
-        fi
-    done
-    
-    # Telegram Channel ID
-    while true; do
-        read -p "Enter Telegram Channel ID: " TELEGRAM_CHANNEL_ID
-        if validate_channel_id "$TELEGRAM_CHANNEL_ID"; then
-            break
-        fi
-    done
+    # Telegram Bot Token (required for any Telegram option)
+    if [[ "$TELEGRAM_DESTINATION" != "none" ]]; then
+        while true; do
+            read -p "Enter Telegram Bot Token: " TELEGRAM_BOT_TOKEN
+            if validate_bot_token "$TELEGRAM_BOT_TOKEN"; then
+                break
+            fi
+        done
+    fi
     
     # Host Domain (optional)
     read -p "Enter host domain [default: m.googleapis.com]: " HOST_DOMAIN
@@ -136,8 +197,19 @@ show_config_summary() {
     echo "Service Name:  $SERVICE_NAME"
     echo "Host Domain:   $HOST_DOMAIN"
     echo "UUID:          $UUID"
-    echo "Bot Token:     ${TELEGRAM_BOT_TOKEN:0:8}..."
-    echo "Channel ID:    $TELEGRAM_CHANNEL_ID"
+    
+    if [[ "$TELEGRAM_DESTINATION" != "none" ]]; then
+        echo "Bot Token:     ${TELEGRAM_BOT_TOKEN:0:8}..."
+        echo "Destination:   $TELEGRAM_DESTINATION"
+        if [[ "$TELEGRAM_DESTINATION" == "channel" || "$TELEGRAM_DESTINATION" == "both" ]]; then
+            echo "Channel ID:    $TELEGRAM_CHANNEL_ID"
+        fi
+        if [[ "$TELEGRAM_DESTINATION" == "bot" || "$TELEGRAM_DESTINATION" == "both" ]]; then
+            echo "Chat ID:       $TELEGRAM_CHAT_ID"
+        fi
+    else
+        echo "Telegram:      Not configured"
+    fi
     echo
     
     while true; do
@@ -182,13 +254,14 @@ cleanup() {
 }
 
 send_to_telegram() {
-    local message="$1"
+    local chat_id="$1"
+    local message="$2"
     local response
     
     response=$(curl -s -w "%{http_code}" -X POST \
         -H "Content-Type: application/json" \
         -d "{
-            \"chat_id\": \"${TELEGRAM_CHANNEL_ID}\",
+            \"chat_id\": \"${chat_id}\",
             \"text\": \"$message\",
             \"parse_mode\": \"MARKDOWN\",
             \"disable_web_page_preview\": true
@@ -199,10 +272,70 @@ send_to_telegram() {
     local content="${response%???}"
     
     if [[ "$http_code" == "200" ]]; then
-        log "✅ Successfully sent to Telegram channel"
         return 0
     else
-        error "❌ Failed to send to Telegram (HTTP $http_code): $content"
+        error "Failed to send to Telegram (HTTP $http_code): $content"
+        return 1
+    fi
+}
+
+send_deployment_notification() {
+    local message="$1"
+    local success_count=0
+    
+    case $TELEGRAM_DESTINATION in
+        "channel")
+            log "Sending to Telegram Channel..."
+            if send_to_telegram "$TELEGRAM_CHANNEL_ID" "$message"; then
+                log "✅ Successfully sent to Telegram Channel"
+                success_count=$((success_count + 1))
+            else
+                error "❌ Failed to send to Telegram Channel"
+            fi
+            ;;
+            
+        "bot")
+            log "Sending to Bot private message..."
+            if send_to_telegram "$TELEGRAM_CHAT_ID" "$message"; then
+                log "✅ Successfully sent to Bot private message"
+                success_count=$((success_count + 1))
+            else
+                error "❌ Failed to send to Bot private message"
+            fi
+            ;;
+            
+        "both")
+            log "Sending to both Channel and Bot..."
+            
+            # Send to Channel
+            if send_to_telegram "$TELEGRAM_CHANNEL_ID" "$message"; then
+                log "✅ Successfully sent to Telegram Channel"
+                success_count=$((success_count + 1))
+            else
+                error "❌ Failed to send to Telegram Channel"
+            fi
+            
+            # Send to Bot
+            if send_to_telegram "$TELEGRAM_CHAT_ID" "$message"; then
+                log "✅ Successfully sent to Bot private message"
+                success_count=$((success_count + 1))
+            else
+                error "❌ Failed to send to Bot private message"
+            fi
+            ;;
+            
+        "none")
+            log "Skipping Telegram notification as configured"
+            return 0
+            ;;
+    esac
+    
+    # Check if at least one message was successful
+    if [[ $success_count -gt 0 ]]; then
+        log "Telegram notification completed ($success_count successful)"
+        return 0
+    else
+        warn "All Telegram notifications failed, but deployment was successful"
         return 1
     fi
 }
@@ -212,6 +345,7 @@ main() {
     
     # Get user input
     select_region
+    select_telegram_destination
     get_user_input
     show_config_summary
     
@@ -275,7 +409,7 @@ main() {
     # Create Vless share link
     VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host=${DOMAIN}&fp=randomized&type=ws&sni=${DOMAIN}#${SERVICE_NAME}"
     
-    # Create message
+    # Create telegram message
     MESSAGE="━━━━━━━━━━━━━━━━━━━━
 *Cloud Run Deploy Success* ✅
 *Project:* \`${PROJECT_ID}\`
@@ -286,25 +420,38 @@ main() {
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-*Usage:* Copy the above link and import to your V2Ray client
+*Usage:* __Copy the above link and import to your V2Ray client.__
+━━━━━━━━━━━━━━━━━━━━"
+
+    # Create console message
+    CONSOLE_MESSAGE="━━━━━━━━━━━━━━━━━━━━
+Cloud Run Deploy Success ✅
+Project: ${PROJECT_ID}
+Service: ${SERVICE_NAME}
+Region: ${REGION}
+URL: ${SERVICE_URL}
+
+${VLESS_LINK}
+
+Usage: Copy the above link and import to your V2Ray client.
 ━━━━━━━━━━━━━━━━━━━━"
     
     # Save to file
-    echo "$MESSAGE" > deployment-info.txt
+    echo "$CONSOLE_MESSAGE" > deployment-info.txt
     log "Deployment info saved to deployment-info.txt"
     
     # Display locally
     echo
     info "=== Deployment Information ==="
-    echo "$MESSAGE"
+    echo "$CONSOLE_MESSAGE"
     echo
     
-    # Send to Telegram
-    log "Sending deployment info to Telegram..."
-    if send_to_telegram "$MESSAGE"; then
-        log "✅ Message sent successfully to Telegram"
+    # Send to Telegram based on user selection
+    if [[ "$TELEGRAM_DESTINATION" != "none" ]]; then
+        log "Sending deployment info to Telegram..."
+        send_deployment_notification "$MESSAGE"
     else
-        warn "Message failed to send to Telegram, but deployment was successful"
+        log "Skipping Telegram notification as per user selection"
     fi
     
     log "Deployment completed successfully!"
