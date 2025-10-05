@@ -326,7 +326,7 @@ get_channel_url() {
     
     # If channel name is empty, use default
     if [[ -z "$CHANNEL_NAME" ]]; then
-        CHANNEL_NAME="premium_channel_404"
+        CHANNEL_NAME="CHANNEL 404 [🇲🇲]"
     fi
     
     # Truncate long names for button text
@@ -404,7 +404,7 @@ show_config_summary() {
             echo "Chat ID:       $TELEGRAM_CHAT_ID"
         fi
         echo "Channel URL:   $CHANNEL_URL"
-        echo "Button Text:   🌟 $CHANNEL_NAME 🌟"
+        echo "Button Text:   $CHANNEL_NAME"
     else
         echo "Telegram:      Not configured"
     fi
@@ -461,7 +461,7 @@ send_to_telegram() {
 {
     "inline_keyboard": [[
         {
-            "text": "🌟 $CHANNEL_NAME 🌟",
+            "text": "$CHANNEL_NAME",
             "url": "$CHANNEL_URL"
         }
     ]]
@@ -627,8 +627,8 @@ main() {
     
     # Create beautiful telegram message with emojis
     MESSAGE="🚀 *GCP V2Ray Deployment Successful* 🚀
-
-✨ *Deployment Details* ✨
+━━━━━━━━━━━━━━━━━━━━
+✨ *Deployment Details:*
 • *Project:* \`${PROJECT_ID}\`
 • *Service:* \`${SERVICE_NAME}\`
 • *Region:* \`${REGION}\`
@@ -639,21 +639,17 @@ main() {
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-
 📝 *Usage Instructions:*
 1. Copy the above configuration link
 2. Open your V2Ray client
 3. Import from clipboard
 4. Connect and enjoy! 🎉
-
-⏰ *Note:* Service will auto-scale based on usage
-
 ━━━━━━━━━━━━━━━━━━━━"
 
     # Create console message
     CONSOLE_MESSAGE="🚀 GCP V2Ray Deployment Successful 🚀
-
-✨ Deployment Details ✨
+━━━━━━━━━━━━━━━━━━━━
+✨ Deployment Details:
 • Project: ${PROJECT_ID}
 • Service: ${SERVICE_NAME}
 • Region: ${REGION}
@@ -668,9 +664,6 @@ ${VLESS_LINK}
 2. Open your V2Ray client  
 3. Import from clipboard
 4. Connect and enjoy! 🎉
-
-⏰ Note: Service will auto-scale based on usage
-
 ━━━━━━━━━━━━━━━━━━━━"
     
     # Save to file
