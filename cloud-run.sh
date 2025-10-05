@@ -63,14 +63,27 @@ validate_chat_id() {
     return 0
 }
 
-# Function to validate URL format
+# Function to validate URL format - FIXED VERSION
 validate_url() {
-    local url_pattern='^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/[a-zA-Z0-9._~:/?#[\]@!$&'"'"'()*+,;=%]*)?$'
-    if [[ ! $1 =~ $url_pattern ]]; then
-        error "Invalid URL format: $1"
+    local url="$1"
+    
+    # Basic URL pattern for Telegram and other common URLs
+    local url_pattern='^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/[a-zA-Z0-9._~:/?#[\]@!$&'"'"'()*+,;=-]*)?$'
+    
+    # Special pattern for Telegram t.me URLs
+    local telegram_pattern='^https?://t\.me/[a-zA-Z0-9_]+$'
+    
+    if [[ "$url" =~ $telegram_pattern ]]; then
+        return 0
+    elif [[ "$url" =~ $url_pattern ]]; then
+        return 0
+    else
+        error "Invalid URL format: $url"
+        error "Please use a valid URL format like:"
+        error "  - https://t.me/channel_name"
+        error "  - https://example.com"
         return 1
     fi
-    return 0
 }
 
 # CPU selection function
@@ -277,34 +290,48 @@ select_telegram_destination() {
     done
 }
 
-# Channel URL input function
+# Channel URL input function - FIXED VERSION
 get_channel_url() {
     echo
     info "=== Channel URL Configuration ==="
     echo "Default URL: https://t.me/premium_channel_404"
     echo "You can use the default URL or enter your own custom URL."
+    echo "Examples:"
+    echo "  - https://t.me/your_channel"
+    echo "  - https://t.me/username"
+    echo "  - https://example.com"
     echo
     
     while true; do
         read -p "Enter Channel URL [default: https://t.me/premium_channel_404]: " CHANNEL_URL
         CHANNEL_URL=${CHANNEL_URL:-"https://t.me/premium_channel_404"}
         
+        # Remove any trailing slashes
+        CHANNEL_URL=$(echo "$CHANNEL_URL" | sed 's|/*$||')
+        
         if validate_url "$CHANNEL_URL"; then
             break
         else
-            warn "Please enter a valid URL (starting with http:// or https://)"
+            warn "Please enter a valid URL"
         fi
     done
     
     # Extract channel name for button text
-    CHANNEL_NAME=$(echo "$CHANNEL_URL" | sed 's|.*://||' | sed 's|/||g')
-    if [[ "$CHANNEL_NAME" == "t.me"* ]]; then
-        CHANNEL_NAME=$(echo "$CHANNEL_NAME" | sed 's/t.me//' | sed 's/^\.//')
+    if [[ "$CHANNEL_URL" == *"t.me/"* ]]; then
+        CHANNEL_NAME=$(echo "$CHANNEL_URL" | sed 's|.*t.me/||' | sed 's|/*$||')
+    else
+        # For non-telegram URLs, use the domain name
+        CHANNEL_NAME=$(echo "$CHANNEL_URL" | sed 's|.*://||' | sed 's|/.*||' | sed 's|www\.||')
     fi
     
     # If channel name is empty, use default
     if [[ -z "$CHANNEL_NAME" ]]; then
-        CHANNEL_NAME="Join Channel"
+        CHANNEL_NAME="premium_channel_404"
+    fi
+    
+    # Truncate long names for button text
+    if [[ ${#CHANNEL_NAME} -gt 20 ]]; then
+        CHANNEL_NAME="${CHANNEL_NAME:0:17}..."
     fi
     
     info "Channel URL: $CHANNEL_URL"
@@ -377,6 +404,7 @@ show_config_summary() {
             echo "Chat ID:       $TELEGRAM_CHAT_ID"
         fi
         echo "Channel URL:   $CHANNEL_URL"
+        echo "Button Text:   🌟 $CHANNEL_NAME 🌟"
     else
         echo "Telegram:      Not configured"
     fi
@@ -433,8 +461,8 @@ send_to_telegram() {
 {
     "inline_keyboard": [[
         {
-            "text": "🌟 ${CHANNEL_NAME} 🌟",
-            "url": "${CHANNEL_URL}"
+            "text": "🌟 $CHANNEL_NAME 🌟",
+            "url": "$CHANNEL_URL"
         }
     ]]
 }
@@ -598,9 +626,9 @@ main() {
     VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host=${DOMAIN}&fp=randomized&type=ws&sni=${DOMAIN}#${SERVICE_NAME}"
     
     # Create beautiful telegram message with emojis
-    MESSAGE="🚀 *GCP V2Ray Deployment Successful*
-━━━━━━━━━━━━━━━━━━━━
-✨ *Deployment Details:*
+    MESSAGE="🚀 *GCP V2Ray Deployment Successful* 🚀
+
+✨ *Deployment Details* ✨
 • *Project:* \`${PROJECT_ID}\`
 • *Service:* \`${SERVICE_NAME}\`
 • *Region:* \`${REGION}\`
@@ -611,6 +639,7 @@ main() {
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
+
 📝 *Usage Instructions:*
 1. Copy the above configuration link
 2. Open your V2Ray client
@@ -618,12 +647,13 @@ ${VLESS_LINK}
 4. Connect and enjoy! 🎉
 
 ⏰ *Note:* Service will auto-scale based on usage
+
 ━━━━━━━━━━━━━━━━━━━━"
 
     # Create console message
-    CONSOLE_MESSAGE="🚀 GCP V2Ray Deployment Successful
-━━━━━━━━━━━━━━━━━━━━
-✨ Deployment Details:
+    CONSOLE_MESSAGE="🚀 GCP V2Ray Deployment Successful 🚀
+
+✨ Deployment Details ✨
 • Project: ${PROJECT_ID}
 • Service: ${SERVICE_NAME}
 • Region: ${REGION}
@@ -640,6 +670,7 @@ ${VLESS_LINK}
 4. Connect and enjoy! 🎉
 
 ⏰ Note: Service will auto-scale based on usage
+
 ━━━━━━━━━━━━━━━━━━━━"
     
     # Save to file
