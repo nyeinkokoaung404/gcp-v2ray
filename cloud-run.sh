@@ -211,21 +211,23 @@ select_region() {
     echo "3. us-east1 (South Carolina, USA)"
     echo "4. europe-west1 (Belgium)"
     echo "5. asia-southeast1 (Singapore)"
-    echo "6. asia-northeast1 (Tokyo, Japan)"
-    echo "7. asia-east1 (Taiwan)"
+    echo "6. asia-southeast2 (Indonesia)"
+    echo "7. asia-northeast1 (Tokyo, Japan)"
+    echo "8. asia-east1 (Taiwan)"
     echo
     
     while true; do
-        read -p "Select region (1-7): " region_choice
+        read -p "Select region (1-8): " region_choice
         case $region_choice in
             1) REGION="us-central1"; break ;;
             2) REGION="us-west1"; break ;;
             3) REGION="us-east1"; break ;;
             4) REGION="europe-west1"; break ;;
             5) REGION="asia-southeast1"; break ;;
-            6) REGION="asia-northeast1"; break ;;
-            7) REGION="asia-east1"; break ;;
-            *) echo "Invalid selection. Please enter a number between 1-7." ;;
+            6) REGION="asia-southeast2"; break ;;
+            7) REGION="asia-northeast1"; break ;;
+            8) REGION="asia-east1"; break ;;
+            *) echo "Invalid selection. Please enter a number between 1-8." ;;
         esac
     done
     
