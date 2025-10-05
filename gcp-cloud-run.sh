@@ -534,35 +534,34 @@ main() {
     VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host=${DOMAIN}&fp=randomized&type=ws&sni=${DOMAIN}#${SERVICE_NAME}"
     
     # Create telegram message
-    MESSAGE="*Cloud Run Deploy → Successful ✅*
+    MESSAGE="*GCP V2Ray Deployment → Successful ✅*
 ━━━━━━━━━━━━━━━━━━━━
-*Project:* \`${PROJECT_ID}\`
-*Service:* \`${SERVICE_NAME}\`
-*Region:* \`${REGION}\`
-*CPU:* \`${CPU} core(s)\`
-*Memory:* \`${MEMORY}\`
-*URL:* \`${SERVICE_URL}\`
+• *Project:* \`${PROJECT_ID}\`
+• *Service:* \`${SERVICE_NAME}\`
+• *Region:* \`${REGION}\`
+• *Resources:* \`${CPU} CPU | ${MEMORY} RAM\`
+• *Domain:* \`${DOMAIN}\`
 
+🔗 *V2Ray Configuration Link:*
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-━━━━━━━━━━━━━━━━━━━━
-*Usage:* Copy the above link and import to your V2Ray client."
+━━━━━━━━━━━━━━━━━━━━"
 
     # Create console message
-    CONSOLE_MESSAGE="Cloud Run Deploy Success ✅
+    CONSOLE_MESSAGE="GCP V2Ray Deployment → Successful ✅
 ━━━━━━━━━━━━━━━━━━━━
-Project: ${PROJECT_ID}
-Service: ${SERVICE_NAME}
-Region: ${REGION}
-CPU: ${CPU} core(s)
-Memory: ${MEMORY}
-URL: ${SERVICE_URL}
+• Project: ${PROJECT_ID}
+• Service: ${SERVICE_NAME}
+• Region: ${REGION}
+• Resources: ${CPU} CPU | ${MEMORY} RAM
+• Domain: ${DOMAIN}
 
+🔗 V2Ray Configuration Link:
 ${VLESS_LINK}
 
-Usage: Copy the above link and import to your V2Ray client.
-━━━━━━━━━━━━━━━━━━━━"
+━━━━━━━━━━━━━━━━━━━━
+Usage: Copy the above link and import to your V2Ray client."
     
     # Save to file
     echo "$CONSOLE_MESSAGE" > deployment-info.txt
