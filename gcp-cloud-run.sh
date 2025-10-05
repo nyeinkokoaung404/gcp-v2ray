@@ -534,8 +534,8 @@ main() {
     VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host=${DOMAIN}&fp=randomized&type=ws&sni=${DOMAIN}#${SERVICE_NAME}"
     
     # Create telegram message
-    MESSAGE="━━━━━━━━━━━━━━━━━━━━
-*Cloud Run Deploy Success* ✅
+    MESSAGE="*Cloud Run Deploy → Successful ✅*
+━━━━━━━━━━━━━━━━━━━━
 *Project:* \`${PROJECT_ID}\`
 *Service:* \`${SERVICE_NAME}\`
 *Region:* \`${REGION}\`
@@ -546,12 +546,12 @@ main() {
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-*Usage:* __Copy the above link and import to your V2Ray client.__
-━━━━━━━━━━━━━━━━━━━━"
+━━━━━━━━━━━━━━━━━━━━
+*Usage:* Copy the above link and import to your V2Ray client."
 
     # Create console message
-    CONSOLE_MESSAGE="━━━━━━━━━━━━━━━━━━━━
-Cloud Run Deploy Success ✅
+    CONSOLE_MESSAGE="Cloud Run Deploy Success ✅
+━━━━━━━━━━━━━━━━━━━━
 Project: ${PROJECT_ID}
 Service: ${SERVICE_NAME}
 Region: ${REGION}
