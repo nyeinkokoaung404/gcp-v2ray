@@ -611,7 +611,6 @@ main() {
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-
 📝 *Usage Instructions:*
 1. Copy the above configuration link
 2. Open your V2Ray client
