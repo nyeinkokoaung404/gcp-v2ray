@@ -63,6 +63,132 @@ validate_chat_id() {
     return 0
 }
 
+# Function to validate URL format
+validate_url() {
+    local url_pattern='^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/[a-zA-Z0-9._~:/?#[\]@!$&'"'"'()*+,;=%]*)?$'
+    if [[ ! $1 =~ $url_pattern ]]; then
+        error "Invalid URL format: $1"
+        return 1
+    fi
+    return 0
+}
+
+# CPU selection function
+select_cpu() {
+    echo
+    info "=== CPU Configuration ==="
+    echo "1. 1 CPU Core (Default)"
+    echo "2. 2 CPU Cores"
+    echo "3. 4 CPU Cores"
+    echo "4. 8 CPU Cores"
+    echo
+    
+    while true; do
+        read -p "Select CPU cores (1-4): " cpu_choice
+        case $cpu_choice in
+            1) CPU="1"; break ;;
+            2) CPU="2"; break ;;
+            3) CPU="4"; break ;;
+            4) CPU="8"; break ;;
+            *) echo "Invalid selection. Please enter a number between 1-4." ;;
+        esac
+    done
+    
+    info "Selected CPU: $CPU core(s)"
+}
+
+# Memory selection function
+select_memory() {
+    echo
+    info "=== Memory Configuration ==="
+    
+    # Show recommended memory based on CPU selection
+    case $CPU in
+        1) echo "Recommended memory: 512Mi - 2Gi" ;;
+        2) echo "Recommended memory: 1Gi - 4Gi" ;;
+        4) echo "Recommended memory: 2Gi - 8Gi" ;;
+        8) echo "Recommended memory: 4Gi - 16Gi" ;;
+    esac
+    echo
+    
+    echo "Memory Options:"
+    echo "1. 512Mi"
+    echo "2. 1Gi"
+    echo "3. 2Gi"
+    echo "4. 4Gi"
+    echo "5. 8Gi"
+    echo "6. 16Gi"
+    echo
+    
+    while true; do
+        read -p "Select memory (1-6): " memory_choice
+        case $memory_choice in
+            1) MEMORY="512Mi"; break ;;
+            2) MEMORY="1Gi"; break ;;
+            3) MEMORY="2Gi"; break ;;
+            4) MEMORY="4Gi"; break ;;
+            5) MEMORY="8Gi"; break ;;
+            6) MEMORY="16Gi"; break ;;
+            *) echo "Invalid selection. Please enter a number between 1-6." ;;
+        esac
+    done
+    
+    # Validate memory configuration
+    validate_memory_config
+    
+    info "Selected Memory: $MEMORY"
+}
+
+# Validate memory configuration based on CPU
+validate_memory_config() {
+    local cpu_num=$CPU
+    local memory_num=$(echo $MEMORY | sed 's/[^0-9]*//g')
+    local memory_unit=$(echo $MEMORY | sed 's/[0-9]*//g')
+    
+    # Convert everything to Mi for comparison
+    if [[ "$memory_unit" == "Gi" ]]; then
+        memory_num=$((memory_num * 1024))
+    fi
+    
+    local min_memory=0
+    local max_memory=0
+    
+    case $cpu_num in
+        1) 
+            min_memory=512
+            max_memory=2048
+            ;;
+        2) 
+            min_memory=1024
+            max_memory=4096
+            ;;
+        4) 
+            min_memory=2048
+            max_memory=8192
+            ;;
+        8) 
+            min_memory=4096
+            max_memory=16384
+            ;;
+    esac
+    
+    if [[ $memory_num -lt $min_memory ]]; then
+        warn "Memory configuration ($MEMORY) might be too low for $CPU CPU core(s)."
+        warn "Recommended minimum: $((min_memory / 1024))Gi"
+        read -p "Do you want to continue with this configuration? (y/n): " confirm
+        if [[ ! $confirm =~ [Yy] ]]; then
+            select_memory
+        fi
+    elif [[ $memory_num -gt $max_memory ]]; then
+        warn "Memory configuration ($MEMORY) might be too high for $CPU CPU core(s)."
+        warn "Recommended maximum: $((max_memory / 1024))Gi"
+        read -p "Do you want to continue with this configuration? (y/n): " confirm
+        if [[ ! $confirm =~ [Yy] ]]; then
+            select_memory
+        fi
+    fi
+}
+
 # Region selection function
 select_region() {
     echo
@@ -73,10 +199,11 @@ select_region() {
     echo "4. europe-west1 (Belgium)"
     echo "5. asia-southeast1 (Singapore)"
     echo "6. asia-northeast1 (Tokyo, Japan)"
+    echo "7. asia-east1 (Taiwan)"
     echo
     
     while true; do
-        read -p "Select region (1-6): " region_choice
+        read -p "Select region (1-7): " region_choice
         case $region_choice in
             1) REGION="us-central1"; break ;;
             2) REGION="us-west1"; break ;;
@@ -84,7 +211,8 @@ select_region() {
             4) REGION="europe-west1"; break ;;
             5) REGION="asia-southeast1"; break ;;
             6) REGION="asia-northeast1"; break ;;
-            *) echo "Invalid selection. Please enter a number between 1-6." ;;
+            7) REGION="asia-east1"; break ;;
+            *) echo "Invalid selection. Please enter a number between 1-7." ;;
         esac
     done
     
@@ -149,6 +277,40 @@ select_telegram_destination() {
     done
 }
 
+# Channel URL input function
+get_channel_url() {
+    echo
+    info "=== Channel URL Configuration ==="
+    echo "Default URL: https://t.me/premium_channel_404"
+    echo "You can use the default URL or enter your own custom URL."
+    echo
+    
+    while true; do
+        read -p "Enter Channel URL [default: https://t.me/premium_channel_404]: " CHANNEL_URL
+        CHANNEL_URL=${CHANNEL_URL:-"https://t.me/premium_channel_404"}
+        
+        if validate_url "$CHANNEL_URL"; then
+            break
+        else
+            warn "Please enter a valid URL (starting with http:// or https://)"
+        fi
+    done
+    
+    # Extract channel name for button text
+    CHANNEL_NAME=$(echo "$CHANNEL_URL" | sed 's|.*://||' | sed 's|/||g')
+    if [[ "$CHANNEL_NAME" == "t.me"* ]]; then
+        CHANNEL_NAME=$(echo "$CHANNEL_NAME" | sed 's/t.me//' | sed 's/^\.//')
+    fi
+    
+    # If channel name is empty, use default
+    if [[ -z "$CHANNEL_NAME" ]]; then
+        CHANNEL_NAME="premium_channel_404"
+    fi
+    
+    info "Channel URL: $CHANNEL_URL"
+    info "Channel Name: $CHANNEL_NAME"
+}
+
 # User input function
 get_user_input() {
     echo
@@ -186,6 +348,11 @@ get_user_input() {
     # Host Domain (optional)
     read -p "Enter host domain [default: m.googleapis.com]: " HOST_DOMAIN
     HOST_DOMAIN=${HOST_DOMAIN:-"m.googleapis.com"}
+    
+    # Get Channel URL if Telegram is enabled
+    if [[ "$TELEGRAM_DESTINATION" != "none" ]]; then
+        get_channel_url
+    fi
 }
 
 # Display configuration summary
@@ -197,6 +364,8 @@ show_config_summary() {
     echo "Service Name:  $SERVICE_NAME"
     echo "Host Domain:   $HOST_DOMAIN"
     echo "UUID:          $UUID"
+    echo "CPU:           $CPU core(s)"
+    echo "Memory:        $MEMORY"
     
     if [[ "$TELEGRAM_DESTINATION" != "none" ]]; then
         echo "Bot Token:     ${TELEGRAM_BOT_TOKEN:0:8}..."
@@ -207,6 +376,7 @@ show_config_summary() {
         if [[ "$TELEGRAM_DESTINATION" == "bot" || "$TELEGRAM_DESTINATION" == "both" ]]; then
             echo "Chat ID:       $TELEGRAM_CHAT_ID"
         fi
+        echo "Channel URL:   $CHANNEL_URL"
     else
         echo "Telegram:      Not configured"
     fi
@@ -258,13 +428,27 @@ send_to_telegram() {
     local message="$2"
     local response
     
+    # Create inline keyboard with dynamic button
+    local keyboard=$(cat << EOF
+{
+    "inline_keyboard": [[
+        {
+            "text": "🌟 ${CHANNEL_NAME} 🌟",
+            "url": "${CHANNEL_URL}"
+        }
+    ]]
+}
+EOF
+)
+    
     response=$(curl -s -w "%{http_code}" -X POST \
         -H "Content-Type: application/json" \
         -d "{
             \"chat_id\": \"${chat_id}\",
             \"text\": \"$message\",
             \"parse_mode\": \"MARKDOWN\",
-            \"disable_web_page_preview\": true
+            \"disable_web_page_preview\": true,
+            \"reply_markup\": $keyboard
         }" \
         https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage)
     
@@ -345,6 +529,8 @@ main() {
     
     # Get user input
     select_region
+    select_cpu
+    select_memory
     select_telegram_destination
     get_user_input
     show_config_summary
@@ -355,6 +541,8 @@ main() {
     log "Project: $PROJECT_ID"
     log "Region: $REGION"
     log "Service: $SERVICE_NAME"
+    log "CPU: $CPU core(s)"
+    log "Memory: $MEMORY"
     
     validate_prerequisites
     
@@ -391,8 +579,8 @@ main() {
         --platform managed \
         --region ${REGION} \
         --allow-unauthenticated \
-        --cpu 2 \
-        --memory 4Gi \
+        --cpu ${CPU} \
+        --memory ${MEMORY} \
         --quiet; then
         error "Deployment failed"
         exit 1
@@ -409,31 +597,50 @@ main() {
     # Create Vless share link
     VLESS_LINK="vless://${UUID}@${HOST_DOMAIN}:443?path=%2Ftg-%40nkka404&security=tls&alpn=h3%2Ch2%2Chttp%2F1.1&encryption=none&host=${DOMAIN}&fp=randomized&type=ws&sni=${DOMAIN}#${SERVICE_NAME}"
     
-    # Create telegram message
-    MESSAGE="━━━━━━━━━━━━━━━━━━━━
-*Cloud Run Deploy Success* ✅
-*Project:* \`${PROJECT_ID}\`
-*Service:* \`${SERVICE_NAME}\`
-*Region:* \`${REGION}\`
-*URL:* \`${SERVICE_URL}\`
+    # Create beautiful telegram message with emojis
+    MESSAGE="🚀 *GCP V2Ray Deployment Successful*
+━━━━━━━━━━━━━━━━━━━━
+✨ *Deployment Details:*
+• *Project:* \`${PROJECT_ID}\`
+• *Service:* \`${SERVICE_NAME}\`
+• *Region:* \`${REGION}\`
+• *Resources:* \`${CPU} CPU | ${MEMORY} RAM\`
+• *Domain:* \`${DOMAIN}\`
 
+🔗 *V2Ray Configuration Link:*
 \`\`\`
 ${VLESS_LINK}
 \`\`\`
-*Usage:* __Copy the above link and import to your V2Ray client.__
+
+📝 *Usage Instructions:*
+1. Copy the above configuration link
+2. Open your V2Ray client
+3. Import from clipboard
+4. Connect and enjoy! 🎉
+
+⏰ *Note:* Service will auto-scale based on usage
 ━━━━━━━━━━━━━━━━━━━━"
 
     # Create console message
-    CONSOLE_MESSAGE="━━━━━━━━━━━━━━━━━━━━
-Cloud Run Deploy Success ✅
-Project: ${PROJECT_ID}
-Service: ${SERVICE_NAME}
-Region: ${REGION}
-URL: ${SERVICE_URL}
+    CONSOLE_MESSAGE="🚀 GCP V2Ray Deployment Successful
+━━━━━━━━━━━━━━━━━━━━
+✨ Deployment Details:
+• Project: ${PROJECT_ID}
+• Service: ${SERVICE_NAME}
+• Region: ${REGION}
+• Resources: ${CPU} CPU | ${MEMORY} RAM
+• Domain: ${DOMAIN}
 
+🔗 V2Ray Configuration Link:
 ${VLESS_LINK}
 
-Usage: Copy the above link and import to your V2Ray client.
+📝 Usage Instructions:
+1. Copy the above configuration link
+2. Open your V2Ray client  
+3. Import from clipboard
+4. Connect and enjoy! 🎉
+
+⏰ Note: Service will auto-scale based on usage
 ━━━━━━━━━━━━━━━━━━━━"
     
     # Save to file
