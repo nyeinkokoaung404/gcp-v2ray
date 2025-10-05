@@ -304,7 +304,7 @@ get_channel_url() {
     
     # If channel name is empty, use default
     if [[ -z "$CHANNEL_NAME" ]]; then
-        CHANNEL_NAME="premium_channel_404"
+        CHANNEL_NAME="Join Channel"
     fi
     
     info "Channel URL: $CHANNEL_URL"
