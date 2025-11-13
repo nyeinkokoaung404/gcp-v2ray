@@ -34,7 +34,7 @@ This project allows you to deploy a **VLESS proxy** server over **WebSocket** us
       "settings": {
         "clients": [
           {
-            "id": "a3b7de87-b46f-4dcf-b6ed-5bf5ebe83167",
+            "id": "d1b77b27-8ceb-41ac-ba5d-0f4b61ca8ab8",
             "level": 0
           }
         ],
@@ -43,7 +43,7 @@ This project allows you to deploy a **VLESS proxy** server over **WebSocket** us
       "streamSettings": {
         "network": "ws",
         "wsSettings": {
-          "path": "/t.me/nkka404"
+          "path": "/t.me/kokhant834"
         }
       }
     }
@@ -110,10 +110,10 @@ Use the following settings in your client app:
 | Protocol   | VLESS                                  |
 | Address    | `your.domain.com`                      |
 | Port       | `443` (HTTPS)                          |
-| UUID       | `ba0e3984-ccc9-48a3-8074-b2f507f41ce8` |
+| UUID       | `d1b77b27-8ceb-41ac-ba5d-0f4b61ca8ab8` |
 | Encryption | none                                   |
 | Transport  | WebSocket (WS)                         |
-| WS Path    | `/tg-@nkka404`                         |
+| WS Path    | `/tg-@kokhant834`                         |
 | TLS        | Yes (via Google CDN)                   |
 
 ---
@@ -144,7 +144,7 @@ This project is licensed under the **MIT License**.
 
 ## 👤 Author
 
-Made with ❤️ by [404\2.0](https://t.me/nkka404)
+Made with ❤️ by [kokhant](https://t.me/kokhant834)
 
 ---
 
