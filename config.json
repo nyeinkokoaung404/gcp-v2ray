@@ -1,7 +1,7 @@
 {
   "inbounds": [
     {
-      "port": 8080,
+      "port": 50051,
       "protocol": "vless",
       "settings": {
         "clients": [
@@ -13,10 +13,10 @@
         "decryption": "none"
       },
       "streamSettings": {
-        "network": "ws",
+        "network": "grpc",
         "security": "none",
-        "wsSettings": {
-          "path": "/tg-@nkka404"
+        "grpcSettings": {
+          "serviceName": "vless-grpc-service"
         }
       }
     }
