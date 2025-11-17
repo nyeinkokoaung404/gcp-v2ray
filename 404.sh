@@ -208,7 +208,7 @@ ok "CPU/Mem: ${CPU} vCPU / ${MEMORY}"
 
 # =================== Step 6: Service Name ===================
 banner "🪪 Step 6 — Service Name"
-SERVICE="${SERVICE:-freen4vpn}"
+SERVICE="${SERVICE:-channel404}"
 TIMEOUT="${TIMEOUT:-3600}"
 PORT="${PORT:-8080}"
 read -rp "Service name [default: ${SERVICE}]: " _svc || true
