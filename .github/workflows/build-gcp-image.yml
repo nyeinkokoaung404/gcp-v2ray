@@ -1,4 +1,4 @@
-name: Build and Push V2Ray VLESS to Docker Hub
+name: Build and Push V2Ray VLESS gRPC to Docker Hub
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
           {
             "inbounds": [
               {
-                "port": 8080,
+                "port": 50051,
                 "protocol": "vless",
                 "settings": {
                   "clients": [
@@ -34,10 +34,10 @@ jobs:
                   "decryption": "none"
                 },
                 "streamSettings": {
-                  "network": "ws",
+                  "network": "grpc",
                   "security": "none",
-                  "wsSettings": {
-                    "path": "/tg-@nkka404"
+                  "grpcSettings": {
+                    "serviceName": "vless-grpc-service"
                   }
                 }
               }
@@ -49,6 +49,18 @@ jobs:
               }
             ]
           }
+          EOF
+
+      - name: Create Dockerfile
+        run: |
+          cat > Dockerfile << EOF
+          FROM v2fly/v2fly-core:latest
+
+          COPY config.json /etc/v2ray/config.json
+
+          EXPOSE 50051
+
+          CMD ["v2ray", "run", "-config", "/etc/v2ray/config.json"]
           EOF
 
       - name: Set up Docker Buildx
@@ -66,18 +78,24 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/vless-ws:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/vless-ws:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=V2Ray VLESS WS Proxy Server
+            org.opencontainers.image.description=V2Ray VLESS gRPC Proxy Server
             org.opencontainers.image.licenses=MIT
             telegram.channel=https://t.me/premium_channel_404
             maintainer=@nkka404
+            protocol=vless-grpc
+            port=8080
+            service-name=vless-grpc-service
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Verify Docker image
         run: |
           echo "Image successfully built and pushed to Docker Hub"
-          echo "Available as: ${{ secrets.DOCKERHUB_USERNAME }}/vless-ws:latest"
+          echo "Available as: ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:latest"
+          echo "Protocol: VLESS gRPC"
+          echo "Port: 8080"
+          echo "Service Name: vless-grpc-service"
