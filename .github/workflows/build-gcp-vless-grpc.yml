@@ -22,7 +22,7 @@ jobs:
           {
             "inbounds": [
               {
-                "port": 50051,
+                "port": 8080,
                 "protocol": "vless",
                 "settings": {
                   "clients": [
