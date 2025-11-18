@@ -7,7 +7,7 @@ if [[ ! -t 0 ]] && [[ -e /dev/tty ]]; then
 fi
 
 # ===== Logging & error handler =====
-LOG_FILE="/tmp/n4_cloudrun_$(date +%s).log"
+LOG_FILE="/tmp/404_cloudrun_$(date +%s).log"
 touch "$LOG_FILE"
 on_err() {
   local rc=$?
@@ -176,7 +176,7 @@ echo "  4️⃣ VMess WS"
 read -rp "Choose [1-4, default 1]: " _opt || true
 case "${_opt:-1}" in
   2) PROTO="vless-ws"   ; IMAGE="docker.io/nkka404/vless-ws:latest"        ;;
-  3) PROTO="vless-grpc" ; IMAGE="docker.io/n4pro/vlessgrpc:latest" ;;
+  3) PROTO="vless-grpc" ; IMAGE="docker.io/nkka404/vless-grpc:latest" ;;
   4) PROTO="vmess-ws"   ; IMAGE="docker.io/n4pro/vmess:latest"     ;;
   *) PROTO="trojan-ws"  ; IMAGE="docker.io/n4pro/tr:latest"        ;;
 esac
