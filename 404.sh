@@ -256,23 +256,23 @@ kv "URL:" "${C_CYAN}${BOLD}${URL_CANONICAL}${RESET}"
 
 # =================== Protocol URLs ===================
 TROJAN_PASS="Trojan-2025"
-VLESS_UUID="0c890000-4733-b20e-067f-fc341bd20000"
-VLESS_UUID_GRPC="0c890000-4733-4a0e-9a7f-fc341bd20000"
-VMESS_UUID="0c890000-4733-b20e-067f-fc341bd20000"
+VLESS_UUID="ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
+VLESS_UUID_GRPC="ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
+VMESS_UUID="ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
 
 make_vmess_ws_uri(){
   local host="$1"
   local json=$(cat <<JSON
-{"v":"2","ps":"VMess-WS","add":"vpn.googleapis.com","port":"443","id":"${VMESS_UUID}","aid":"0","scy":"zero","net":"ws","type":"none","host":"${host}","path":"/N4","tls":"tls","sni":"vpn.googleapis.com","alpn":"http/1.1","fp":"randomized"}
+{"v":"2","ps":"VMess-WS","add":"vpn.googleapis.com","port":"443","id":"${VMESS_UUID}","aid":"0","scy":"zero","net":"ws","type":"none","host":"${host}","path":"/tg-@nkka404","tls":"tls","sni":"vpn.googleapis.com","alpn":"http/1.1","fp":"randomized"}
 JSON
 )
   base64 <<<"$json" | tr -d '\n' | sed 's/^/vmess:\/\//'
 }
 
 case "$PROTO" in
-  trojan-ws)  URI="trojan://${TROJAN_PASS}@vpn.googleapis.com:443?path=%2FN4&security=tls&host=${CANONICAL_HOST}&type=ws#Trojan-WS" ;;
-  vless-ws)   URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2FN4&security=tls&encryption=none&host=${CANONICAL_HOST}&type=ws#Vless-WS" ;;
-  vless-grpc) URI="vless://${VLESS_UUID_GRPC}@vpn.googleapis.com:443?mode=gun&security=tls&encryption=none&type=grpc&serviceName=n4-grpc&sni=${CANONICAL_HOST}#VLESS-gRPC" ;;
+  trojan-ws)  URI="trojan://${TROJAN_PASS}@vpn.googleapis.com:443?path=%2Ftg-%40nkka404&security=tls&host=${CANONICAL_HOST}&type=ws#Trojan-WS" ;;
+  vless-ws)   URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2Ftg-%40nkka404&security=tls&encryption=none&host=${CANONICAL_HOST}&type=ws#Vless-WS" ;;
+  vless-grpc) URI="vless://${VLESS_UUID_GRPC}@vpn.googleapis.com:443?mode=gun&security=tls&encryption=none&type=grpc&serviceName=vless-grpc-service&sni=${CANONICAL_HOST}#VLESS-gRPC" ;;
   vmess-ws)   URI="$(make_vmess_ws_uri "${CANONICAL_HOST}")" ;;
 esac
 
