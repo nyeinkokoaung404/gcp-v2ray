@@ -1,8 +1,8 @@
-name: Build and Push V2Ray VLESS gRPC to Docker Hub
+name: Build and Push V2Ray Trojan-WS to Docker Hub
 
 on:
   push:
-    branches: [ main ]
+    branches: [ trojan-ws ]
     paths:
       - 'Dockerfile'
       - 'config.json'
@@ -23,22 +23,26 @@ jobs:
             "inbounds": [
               {
                 "port": 8080,
-                "protocol": "vless",
+                "protocol": "trojan",
                 "settings": {
                   "clients": [
                     {
-                      "id": "ba0e3984-ccc9-48a3-8074-b2f507f41ce8",
+                      "password": "Trojan-2025",
                       "level": 0
                     }
                   ],
-                  "decryption": "none"
+                  "fallbacks": []
                 },
                 "streamSettings": {
-                  "network": "grpc",
+                  "network": "ws",
                   "security": "none",
-                  "grpcSettings": {
-                    "serviceName": "vless-grpc-service"
+                  "wsSettings": {
+                    "path": "/tg-@nkka404"
                   }
+                },
+                "sniffing": {
+                  "enabled": true,
+                  "destOverride": ["http", "tls"]
                 }
               }
             ],
@@ -58,7 +62,7 @@ jobs:
 
           COPY config.json /etc/v2ray/config.json
 
-          EXPOSE 50051
+          EXPOSE 8080
 
           CMD ["v2ray", "run", "-config", "/etc/v2ray/config.json"]
           EOF
@@ -78,24 +82,18 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/trojan-ws:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/trojan-ws:${{ github.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=V2Ray VLESS gRPC Proxy Server
+            org.opencontainers.image.description=V2Ray Trojan WebSocket Proxy Server
             org.opencontainers.image.licenses=MIT
             telegram.channel=https://t.me/premium_channel_404
             maintainer=@nkka404
-            protocol=vless-grpc
-            port=8080
-            service-name=vless-grpc-service
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Verify Docker image
         run: |
           echo "Image successfully built and pushed to Docker Hub"
-          echo "Available as: ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:latest"
-          echo "Protocol: VLESS gRPC"
-          echo "Port: 8080"
-          echo "Service Name: vless-grpc-service"
+          echo "Available as: ${{ secrets.DOCKERHUB_USERNAME }}/trojan-ws:latest"
