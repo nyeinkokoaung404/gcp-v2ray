@@ -240,6 +240,7 @@ run_with_progress "Deploying ${SERVICE}" \
     --region="$REGION" \
     --memory="$MEMORY" \
     --cpu="$CPU" \
+    --concurrency=1000 \
     --timeout="$TIMEOUT" \
     --allow-unauthenticated \
     --port="$PORT" \
