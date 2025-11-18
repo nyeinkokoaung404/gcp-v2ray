@@ -2,22 +2,29 @@
   "inbounds": [
     {
       "port": 8080,
-      "protocol": "vless",
+      "protocol": "trojan",
       "settings": {
         "clients": [
           {
-            "id": "ba0e3984-ccc9-48a3-8074-b2f507f41ce8",
+            "password": "Trojan-2025",
             "level": 0
           }
         ],
-        "decryption": "none"
+        "fallbacks": []
       },
       "streamSettings": {
-        "network": "grpc",
+        "network": "ws",
         "security": "none",
-        "grpcSettings": {
-          "serviceName": "vless-grpc-service"
+        "wsSettings": {
+          "path": "/tg-@nkka404",
+          "headers": {
+            "Host": ""
+          }
         }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
       }
     }
   ],
