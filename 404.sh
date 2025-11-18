@@ -178,7 +178,7 @@ case "${_opt:-1}" in
   2) PROTO="vless-ws"   ; IMAGE="docker.io/nkka404/vless-ws:latest"        ;;
   3) PROTO="vless-grpc" ; IMAGE="docker.io/nkka404/vless-grpc:latest" ;;
   4) PROTO="vmess-ws"   ; IMAGE="docker.io/n4pro/vmess:latest"     ;;
-  *) PROTO="trojan-ws"  ; IMAGE="docker.io/n4pro/tr:latest"        ;;
+  *) PROTO="trojan-ws"  ; IMAGE="docker.io/nkka404/trojan-ws:latest"        ;;
 esac
 ok "Protocol selected: ${PROTO^^}"
 echo "[Docker Hidden] ${IMAGE}" >>"$LOG_FILE"
