@@ -2,7 +2,7 @@ name: Build and Push V2Ray VLESS gRPC to Docker Hub
 
 on:
   push:
-    branches: [ main ]
+    branches: [ vless-grpc ]
     paths:
       - 'Dockerfile'
       - 'config.json'
