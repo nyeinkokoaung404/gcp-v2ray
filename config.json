@@ -16,15 +16,8 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/tg-@nkka404",
-          "headers": {
-            "Host": ""
-          }
+          "path": "/tg-@nkka404"
         }
-      },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http", "tls"]
       }
     }
   ],
