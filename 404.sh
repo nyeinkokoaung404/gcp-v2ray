@@ -271,7 +271,7 @@ JSON
 }
 
 case "$PROTO" in
-  trojan-ws)  URI="trojan://${TROJAN_PASS}@vpn.googleapis.com:443?path=%2Ftg-%40nkka404&security=tls&host=${CANONICAL_HOST}&type=ws#Trojan-WS" ;;
+  trojan-ws)  URI="trojan://${TROJAN_PASS}@vpn.googleapis.com:443?path=%2F%40nkka404&security=tls&host=${CANONICAL_HOST}&type=ws#Trojan-WS" ;;
   vless-ws)   URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2F%40nkka404&security=tls&encryption=none&host=${CANONICAL_HOST}&type=ws#Vless-WS" ;;
   vless-grpc) URI="vless://${VLESS_UUID_GRPC}@vpn.googleapis.com:443?mode=gun&security=tls&encryption=none&type=grpc&serviceName=vless-grpc-service&sni=${CANONICAL_HOST}#VLESS-gRPC" ;;
   vmess-ws)   URI="$(make_vmess_ws_uri "${CANONICAL_HOST}")" ;;
