@@ -41,17 +41,17 @@ show_404_banner() {
   printf "\n\n"
   printf "${C_404_RED}${BOLD}"
   printf "╔══════════════════════════════════════════════════════════════════╗\n"
-  printf "║    ${C_404_CYAN} ___   ___          ________          ___   ___                               \n"
-  printf "║    ${C_404_CYAN}|\  \ |\  \        |\   __  \        |\  \ |\  \                              \n"
-  printf "║    ${C_404_CYAN}\ \  \|_\  \       \ \  \|\  \       \ \  \|_\  \                             \n"
-  printf "║    ${C_404_CYAN} \ \______  \       \ \  \/\  \       \ \______  \                            \n"
-  printf "║    ${C_404_CYAN}  \|_____|\  \       \ \  \/\  \       \|_____|\  \                           \n"
-  printf "║    ${C_404_CYAN}         \ \__\       \ \_______\             \ \__\                          \n"
-  printf "║    ${C_404_CYAN}          \|__|        \|_______|              \|__|                          \n"
-  printf "║                                                                                               \n"
-  printf "║         ${C_404_YELLOW}🚀 VLESS WS DEPLOYMENT SYSTEM v2.0${C_404_RED}                         \n"
-  printf "║         ${C_404_GREEN}⚡ Powered by CHANNEL 404${C_404_RED}                                   \n"
-  printf "║                                                                                               \n"
+  printf "║    ${C_404_CYAN} ___   ___          ________          ___   ___                               ${C_404_RED}\n"
+  printf "║    ${C_404_CYAN}|\  \ |\  \        |\   __  \        |\  \ |\  \                              ${C_404_RED}\n"
+  printf "║    ${C_404_CYAN}\ \  \|_\  \       \ \  \|\  \       \ \  \|_\  \                             ${C_404_RED}\n"
+  printf "║    ${C_404_CYAN} \ \______  \       \ \  \/\  \       \ \______  \                            ${C_404_RED}\n"
+  printf "║    ${C_404_CYAN}  \|_____|\  \       \ \  \/\  \       \|_____|\  \                           ${C_404_RED}\n"
+  printf "║    ${C_404_CYAN}         \ \__\       \ \_______\             \ \__\                          ${C_404_RED}\n"
+  printf "║    ${C_404_CYAN}          \|__|        \|_______|              \|__|                          ${C_404_RED}\n"
+  printf "║                                                                                               ${C_404_RED}\n"
+  printf "║         ${C_404_YELLOW}🚀 VLESS WS DEPLOYMENT SYSTEM => VERSION - 2.0                         ${C_404_RED}\n"
+  printf "║         ${C_404_GREEN}⚡ Powered by CHANNEL 404                                               ${C_404_RED}\n"
+  printf "║                                                                                               ${C_404_RED}\n"
   printf "╚══════════════════════════════════════════════════════════════════╝${RESET}\n"
   printf "\n\n"
 }
@@ -414,7 +414,7 @@ echo "[QR Code URL: $URI]" >> "$LOG_FILE"
 show_step "11" "Telegram Notification"
 
 MSG=$(cat <<EOF
-✅ <b>CHANNEL 404 — VLESS WS Deployment Success</b>
+✅ <b>VLESS WS Deployment Success</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 <blockquote>🌍 <b>Region:</b> ${REGION}
 📡 <b>Protocol:</b> VLESS WebSocket
