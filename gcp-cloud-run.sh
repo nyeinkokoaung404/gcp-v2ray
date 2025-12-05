@@ -414,7 +414,7 @@ echo "[QR Code URL: $URI]" >> "$LOG_FILE"
 show_step "11" "Telegram Notification"
 
 MSG=$(cat <<EOF
-✅ <b>CHANNEL 404 — VLESS WS Deployment Success</b>
+✅ <b>VLESS WS Deployment Success</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 <blockquote>🌍 <b>Region:</b> ${REGION}
 📡 <b>Protocol:</b> VLESS WebSocket
