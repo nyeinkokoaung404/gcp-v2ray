@@ -1,4 +1,9 @@
 {
+  "log": {
+    "loglevel": "warning",
+    "access": "/dev/stdout",
+    "error": "/dev/stderr"
+  },
   "inbounds": [
     {
       "port": 8080,
@@ -7,7 +12,8 @@
         "clients": [
           {
             "password": "Trojan-2025",
-            "level": 0
+            "flow": "",
+            "email": "user@trojan-ws"
           }
         ],
         "fallbacks": []
@@ -16,15 +22,80 @@
         "network": "ws",
         "security": "none",
         "wsSettings": {
-          "path": "/tg-@nkka404"
+          "path": "/@nkka404",
+          "headers": {
+            "Host": ""
+          }
         }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls"]
       }
     }
   ],
   "outbounds": [
     {
       "protocol": "freedom",
-      "settings": {}
+      "settings": {},
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "settings": {},
+      "tag": "blocked"
     }
-  ]
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "type": "field",
+        "outboundTag": "direct",
+        "domain": [
+          "geosite:google",
+          "geosite:facebook",
+          "geosite:twitter",
+          "geosite:telegram",
+          "geosite:whatsapp",
+          "geosite:netflix",
+          "geosite:youtube",
+          "geosite:github",
+          "geosite:cloudflare",
+          "geosite:openai",
+          "geosite:google-scholar",
+          "domain:firebaseremoteconfig.googleapis.com"
+        ]
+      },
+      {
+        "type": "field",
+        "outboundTag": "direct",
+        "ip": [
+          "geoip:private",
+          "geoip:cn",
+          "8.8.8.8/32",
+          "1.1.1.1/32"
+        ]
+      },
+      {
+        "type": "field",
+        "outboundTag": "blocked",
+        "domain": [
+          "geosite:category-ads-all"
+        ]
+      },
+      {
+        "type": "field",
+        "outboundTag": "direct",
+        "network": "udp,tcp"
+      }
+    ]
+  },
+  "dns": {
+    "servers": [
+      "8.8.8.8",
+      "1.1.1.1",
+      "localhost"
+    ]
+  }
 }
