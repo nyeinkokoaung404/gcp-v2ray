@@ -1,4 +1,4 @@
-name: Build and Push V2Ray VLESS gRPC to Docker Hub
+name: Build and Push V2Ray VLESS-GRPC to Docker Hub
 
 on:
   push:
@@ -8,6 +8,9 @@ on:
       - 'config.json'
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: vless-grpc
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -16,52 +19,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create V2Ray configuration file
+      - name: Display config.json content (for debugging)
         run: |
-          cat > config.json << EOF
-          {
-            "inbounds": [
-              {
-                "port": 8080,
-                "protocol": "vless",
-                "settings": {
-                  "clients": [
-                    {
-                      "id": "ba0e3984-ccc9-48a3-8074-b2f507f41ce8",
-                      "level": 0
-                    }
-                  ],
-                  "decryption": "none"
-                },
-                "streamSettings": {
-                  "network": "grpc",
-                  "security": "none",
-                  "grpcSettings": {
-                    "serviceName": "vless-grpc-service"
-                  }
-                }
-              }
-            ],
-            "outbounds": [
-              {
-                "protocol": "freedom",
-                "settings": {}
-              }
-            ]
-          }
-          EOF
-
-      - name: Create Dockerfile
-        run: |
-          cat > Dockerfile << EOF
-          FROM v2fly/v2fly-core:latest
-
-          COPY config.json /etc/v2ray/config.json
-
-          EXPOSE 50051
-
-          CMD ["v2ray", "run", "-config", "/etc/v2ray/config.json"]
-          EOF
+          echo "📄 Config.json content:"
+          cat config.json
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -72,30 +33,27 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/vless-grpc' }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:${{ github.sha }}
-          labels: |
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-            org.opencontainers.image.description=V2Ray VLESS gRPC Proxy Server
-            org.opencontainers.image.licenses=MIT
-            telegram.channel=https://t.me/premium_channel_404
-            maintainer=@nkka404
-            protocol=vless-grpc
-            port=8080
-            service-name=vless-grpc-service
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Verify Docker image
+      - name: Success message
         run: |
-          echo "Image successfully built and pushed to Docker Hub"
-          echo "Available as: ${{ secrets.DOCKERHUB_USERNAME }}/vless-grpc:latest"
-          echo "Protocol: VLESS gRPC"
-          echo "Port: 8080"
-          echo "Service Name: vless-grpc-service"
+          echo "✅ Image built and pushed successfully!"
+          echo "📦 Image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}"
