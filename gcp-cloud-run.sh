@@ -20,243 +20,97 @@ on_err() {
 }
 trap on_err ERR
 
-# =================== CHANNEL 404 Custom Colors ===================
+# =================== CHANNEL 404 Custom UI ===================
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
-  RESET=$'\e[0m'; BOLD=$'\e[1m'; DIM=$'\e[2m'
-  # Channel 404 Brand Colors
-  C_404_PRIMARY=$'\e[38;5;200m'     # Magenta/Pink
-  C_404_SECONDARY=$'\e[38;5;39m'    # Cyan/Blue
-  C_404_ACCENT=$'\e[38;5;226m'      # Yellow
-  C_404_SUCCESS=$'\e[38;5;46m'      # Green
-  C_404_WARNING=$'\e[38;5;214m'     # Orange
-  C_404_ERROR=$'\e[38;5;196m'       # Red
-  C_404_GREY=$'\e[38;5;245m'        # Grey
+  RESET=$'\e[0m'; BOLD=$'\e[1m'
+  C_404_RED=$'\e[38;5;196m'      # Bright Red
+  C_404_BLUE=$'\e[38;5;39m'      # Bright Blue
+  C_404_GREEN=$'\e[38;5;46m'     # Bright Green
+  C_404_YELLOW=$'\e[38;5;226m'   # Bright Yellow
+  C_404_PURPLE=$'\e[38;5;93m'    # Purple
+  C_404_GRAY=$'\e[38;5;245m'     # Gray
+  C_404_CYAN=$'\e[38;5;51m'      # Cyan
 else
-  RESET= BOLD= DIM= C_404_PRIMARY= C_404_SECONDARY= C_404_ACCENT= 
-  C_404_SUCCESS= C_404_WARNING= C_404_ERROR= C_404_GREY=
+  RESET= BOLD= C_404_RED= C_404_BLUE= C_404_GREEN= C_404_YELLOW= C_404_PURPLE= C_404_GRAY= C_404_CYAN=
 fi
 
-# =================== CHANNEL 404 UI Components ===================
-channel404_banner() {
-  printf "\n${C_404_PRIMARY}${BOLD}"
-  printf "╔══════════════════════════════════════════════════════════════╗\n"
-  printf "║${C_404_SECONDARY}██╗   ██╗██╗     ███████╗███████╗███████╗${C_404_PRIMARY}║\n"
-  printf "║${C_404_SECONDARY}██║   ██║██║     ██╔════╝██╔════╝██╔════╝${C_404_PRIMARY}║\n"
-  printf "║${C_404_SECONDARY}██║   ██║██║     ███████╗███████╗███████╗${C_404_PRIMARY}║\n"
-  printf "║${C_404_SECONDARY}██║   ██║██║     ╚════██║╚════██║╚════██║${C_404_PRIMARY}║\n"
-  printf "║${C_404_SECONDARY}╚██████╔╝███████╗███████║███████║███████║${C_404_PRIMARY}║\n"
-  printf "║${C_404_SECONDARY} ╚═════╝ ╚══════╝╚══════╝╚══════╝╚══════╝${C_404_PRIMARY}║\n"
-  printf "╠══════════════════════════════════════════════════════════════╣${RESET}\n"
-  printf "${C_404_PRIMARY}${BOLD}║${C_404_ACCENT}    ✦ C L O U D   R U N   D E P L O Y M E N T   S U I T E ✦    ${C_404_PRIMARY}║\n"
-  printf "╚══════════════════════════════════════════════════════════════╝${RESET}\n\n"
+# =================== CHANNEL 404 Banner ===================
+
+show_404_banner() {
+  clear
+  printf "\n\n"
+  printf "${C_404_RED}${BOLD}"
+  printf "╔══════════════════════════════════════════════════════════════════╗\n"
+  printf "║    ${C_404_CYAN} ___   ___          ________          ___   ___                               \n"
+  printf "║    ${C_404_CYAN}|\  \ |\  \        |\   __  \        |\  \ |\  \                              \n"
+  printf "║    ${C_404_CYAN}\ \  \|_\  \       \ \  \|\  \       \ \  \|_\  \                             \n"
+  printf "║    ${C_404_CYAN} \ \______  \       \ \  \/\  \       \ \______  \                            \n"
+  printf "║    ${C_404_CYAN}  \|_____|\  \       \ \  \/\  \       \|_____|\  \                           \n"
+  printf "║    ${C_404_CYAN}         \ \__\       \ \_______\             \ \__\                          \n"
+  printf "║    ${C_404_CYAN}          \|__|        \|_______|              \|__|                          \n"
+  printf "║                                                                                               \n"
+  printf "║         ${C_404_YELLOW}🚀 VLESS WS DEPLOYMENT SYSTEM v2.0${C_404_RED}                         \n"
+  printf "║         ${C_404_GREEN}⚡ Powered by CHANNEL 404${C_404_RED}                                   \n"
+  printf "║                                                                                               \n"
+  printf "╚══════════════════════════════════════════════════════════════════╝${RESET}\n"
+  printf "\n\n"
 }
 
-channel404_section() {
-  local title="$1"
-  printf "\n${C_404_PRIMARY}${BOLD}⟣ ${title} ${C_404_GREY}"
-  printf "%0.s─" $(seq 1 $((60 - ${#title} - 3)))
-  printf "${RESET}\n"
+# =================== Custom UI Functions ===================
+show_step() {
+  local step_num="$1"
+  local step_title="$2"
+  printf "\n${C_404_PURPLE}${BOLD}┌─── STEP %s ──────────────────────────────────────────┐${RESET}\n" "$step_num"
+  printf "${C_404_PURPLE}${BOLD}│${RESET} ${C_404_CYAN}%s${RESET}\n" "$step_title"
+  printf "${C_404_PURPLE}${BOLD}└──────────────────────────────────────────────────────┘${RESET}\n"
 }
 
-channel404_step() {
-  local num="$1" title="$2"
-  printf "${C_404_SECONDARY}${BOLD}[${num}]${RESET} ${BOLD}${title}${RESET}\n"
+show_success() {
+  printf "${C_404_GREEN}${BOLD}✓${RESET} ${C_404_GREEN}%s${RESET}\n" "$1"
 }
 
-channel404_status() {
-  local emoji="$1" msg="$2" color=""
-  case "$emoji" in
-    "✅") color="$C_404_SUCCESS" ;;
-    "⚠️") color="$C_404_WARNING" ;;
-    "❌") color="$C_404_ERROR" ;;
-    "🔧") color="$C_404_SECONDARY" ;;
-    "🚀") color="$C_404_ACCENT" ;;
-    *) color="$C_404_SECONDARY" ;;
-  esac
-  printf "${color}${emoji}${RESET} ${msg}\n"
+show_info() {
+  printf "${C_404_BLUE}${BOLD}ℹ${RESET} ${C_404_BLUE}%s${RESET}\n" "$1"
 }
 
-channel404_divider() {
-  printf "${C_404_GREY}┌%0.s─" $(seq 1 58)
-  printf "┐${RESET}\n"
+show_warning() {
+  printf "${C_404_YELLOW}${BOLD}⚠${RESET} ${C_404_YELLOW}%s${RESET}\n" "$1"
 }
 
-channel404_box() {
-  local content="$1"
-  printf "${C_404_GREY}│${RESET} %-56s ${C_404_GREY}│${RESET}\n" "$content"
+show_error() {
+  printf "${C_404_RED}${BOLD}✗${RESET} ${C_404_RED}%s${RESET}\n" "$1"
 }
 
-channel404_divider_end() {
-  printf "${C_404_GREY}└%0.s─" $(seq 1 58)
-  printf "┘${RESET}\n"
+show_divider() {
+  printf "${C_404_GRAY}%s${RESET}\n" "──────────────────────────────────────────────────────────"
 }
 
-# =================== Start CHANNEL 404 UI ===================
-clear
-channel404_banner
-
-# =================== Step 1: Telegram Config ===================
-channel404_section "TELEGRAM CONFIGURATION"
-channel404_step "01" "Telegram Bot Setup"
-
-TELEGRAM_TOKEN="${TELEGRAM_TOKEN:-}"
-TELEGRAM_CHAT_IDS="${TELEGRAM_CHAT_IDS:-${TELEGRAM_CHAT_ID:-}}"
-
-if [[ ( -z "${TELEGRAM_TOKEN}" || -z "${TELEGRAM_CHAT_IDS}" ) && -f .env ]]; then
-  set -a; source ./.env; set +a
-fi
-
-printf "\n${C_404_SECONDARY}📱 Telegram Integration${RESET}\n"
-channel404_divider
-channel404_box "Required for deployment notifications and configuration sharing"
-channel404_box "Create bot via @BotFather and get Token & Chat ID"
-channel404_divider_end
-
-read -rp "${C_404_ACCENT}🤖 Bot Token: ${RESET}" _tk || true
-[[ -n "${_tk:-}" ]] && TELEGRAM_TOKEN="$_tk"
-
-if [[ -z "${TELEGRAM_TOKEN:-}" ]]; then
-  channel404_status "⚠️" "Telegram disabled - notifications will be skipped"
-else
-  channel404_status "✅" "Bot token captured"
-fi
-
-read -rp "${C_404_ACCENT}👤 Owner/Chat ID(s): ${RESET}" _ids || true
-[[ -n "${_ids:-}" ]] && TELEGRAM_CHAT_IDS="${_ids// /}"
-
-CHAT_ID_ARR=()
-IFS=',' read -r -a CHAT_ID_ARR <<< "${TELEGRAM_CHAT_IDS:-}" || true
-
-# =================== Step 2: Project Verification ===================
-channel404_section "GOOGLE CLOUD CONFIGURATION"
-channel404_step "02" "GCP Project Setup"
-
-PROJECT="$(gcloud config get-value project 2>/dev/null || true)"
-if [[ -z "$PROJECT" ]]; then
-  channel404_status "❌" "No active GCP project found"
-  printf "\n${C_404_SECONDARY}Quick fix:${RESET}\n"
-  printf "  ${C_404_GREY}gcloud config set project YOUR_PROJECT_ID${RESET}\n"
-  exit 1
-fi
-
-PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')" || true
-channel404_status "✅" "Project: ${C_404_ACCENT}${PROJECT}${RESET} (${PROJECT_NUMBER})"
-
-# =================== Step 3: Protocol Selection ===================
-channel404_section "PROTOCOL CONFIGURATION"
-channel404_step "03" "Select Protocol"
-
-printf "\n${C_404_SECONDARY}⚡ Available Protocols:${RESET}\n"
-channel404_divider
-channel404_box "${C_404_SUCCESS}✓ VLESS WebSocket (WS) ${C_404_GREY}- Recommended${RESET}"
-channel404_box "  • Support CDN (Cloudflare)"
-channel404_box "  • High performance"
-channel404_box "  • TLS encryption"
-channel404_divider_end
-
-PROTO="vless-ws"
-IMAGE="docker.io/nkka404/vless-ws:latest"
-channel404_status "✅" "Protocol selected: ${C_404_ACCENT}${PROTO^^}${RESET}"
-
-# =================== Step 4: Region Selection ===================
-channel404_section "REGION SELECTION"
-channel404_step "04" "Choose Deployment Region"
-
-printf "\n${C_404_SECONDARY}🌍 Available Regions:${RESET}\n"
-channel404_divider
-channel404_box "1. ${C_404_SUCCESS}Singapore${RESET} (asia-southeast1) - Low latency"
-channel404_box "2. ${C_404_WARNING}United States${RESET} (us-central1) - Global"
-channel404_box "3. ${C_404_SUCCESS}Indonesia${RESET} (asia-southeast2) - SEA optimized"
-channel404_box "4. ${C_404_SUCCESS}Japan${RESET} (asia-northeast1) - Asia optimized"
-channel404_divider_end
-
-read -rp "${C_404_ACCENT}📍 Select region [1-4, default 1]: ${RESET}" _r || true
-case "${_r:-1}" in
-  2) REGION="us-central1" ;;
-  3) REGION="asia-southeast2" ;;
-  4) REGION="asia-northeast1" ;;
-  *) REGION="asia-southeast1" ;;
-esac
-
-channel404_status "✅" "Region: ${C_404_ACCENT}${REGION}${RESET}"
-
-# =================== Step 5: Resource Allocation ===================
-channel404_section "RESOURCE ALLOCATION"
-channel404_step "05" "CPU & Memory Configuration"
-
-printf "\n${C_404_SECONDARY}💾 Resource Tiers:${RESET}\n"
-channel404_divider
-channel404_box "Tier 1: 1 vCPU / 2Gi RAM ${C_404_GREY}(~100-200 users)${RESET}"
-channel404_box "Tier 2: 2 vCPU / 4Gi RAM ${C_404_GREY}(~200-500 users)${RESET}"
-channel404_box "Tier 3: 4 vCPU / 8Gi RAM ${C_404_GREY}(~500-1000 users)${RESET}"
-channel404_divider_end
-
-read -rp "${C_404_ACCENT}⚙️  CPU cores [1/2/4, default 2]: ${RESET}" _cpu || true
-CPU="${_cpu:-2}"
-
-read -rp "${C_404_ACCENT}🧠 Memory [2Gi/4Gi/8Gi, default 4Gi]: ${RESET}" _mem || true
-MEMORY="${_mem:-4Gi}"
-
-channel404_status "✅" "Resources: ${C_404_ACCENT}${CPU} vCPU / ${MEMORY}${RESET}"
-
-# =================== Step 6: Service Configuration ===================
-channel404_section "SERVICE CONFIGURATION"
-channel404_step "06" "Service Settings"
-
-SERVICE="${SERVICE:-channel404-vless}"
-TIMEOUT="${TIMEOUT:-3600}"
-PORT="${PORT:-8080}"
-
-read -rp "${C_404_ACCENT}🏷️  Service name [default: ${SERVICE}]: ${RESET}" _svc || true
-SERVICE="${_svc:-$SERVICE}"
-
-channel404_status "✅" "Service: ${C_404_ACCENT}${SERVICE}${RESET}"
-channel404_status "🔧" "Port: ${PORT} | Timeout: ${TIMEOUT}s"
-
-# =================== Timezone Setup ===================
-export TZ="Asia/Yangon"
-START_EPOCH="$(date +%s)"
-END_EPOCH="$(( START_EPOCH + 5*3600 ))"
-fmt_dt(){ date -d @"$1" "+%d.%m.%Y %I:%M %p"; }
-START_LOCAL="$(fmt_dt "$START_EPOCH")"
-END_LOCAL="$(fmt_dt "$END_EPOCH")"
-
-channel404_section "DEPLOYMENT TIMELINE"
-channel404_step "07" "Deployment Schedule"
-
-printf "\n"
-channel404_divider
-channel404_box "${C_404_SUCCESS}▶ START${RESET}   ${START_LOCAL}"
-channel404_box "${C_404_WARNING}⏸︎ END${RESET}     ${END_LOCAL}"
-channel404_box "${C_404_SECONDARY}⏱️ DURATION${RESET} 5 hours"
-channel404_divider_end
+show_kv() {
+  printf "   ${C_404_GRAY}%s${RESET}  ${C_404_CYAN}%s${RESET}\n" "$1" "$2"
+}
 
 # =================== Progress Spinner ===================
-channel404_progress() {
+run_with_progress() {
   local label="$1"; shift
-  local frames=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
-  local frame_idx=0
-  local pct=5
-  
   ( "$@" ) >>"$LOG_FILE" 2>&1 &
   local pid=$!
+  local pct=5
   
   if [[ -t 1 ]]; then
     printf "\e[?25l"
     while kill -0 "$pid" 2>/dev/null; do
-      frame_idx=$(( (frame_idx + 1) % ${#frames[@]} ))
-      local step=$(( (RANDOM % 7) + 3 ))
+      local step=$(( (RANDOM % 9) + 2 ))
       pct=$(( pct + step ))
       (( pct > 95 )) && pct=95
-      printf "\r${C_404_PRIMARY}${frames[frame_idx]}${RESET} ${label} ${C_404_GREY}[${pct}%%]${RESET}"
-      sleep 0.1
+      printf "\r${C_404_PURPLE}⟳${RESET} ${C_404_CYAN}%s...${RESET} [${C_404_YELLOW}%s%%${RESET}]" "$label" "$pct"
+      sleep "$(awk -v r=$RANDOM 'BEGIN{s=0.08+(r%7)/100; printf "%.2f", s }')"
     done
     wait "$pid"; local rc=$?
     printf "\r"
     if (( rc==0 )); then
-      printf "${C_404_SUCCESS}✅${RESET} ${label} ${C_404_GREY}[100%%]${RESET}\n"
+      printf "${C_404_GREEN}✓${RESET} ${C_404_GREEN}%s...${RESET} [${C_404_GREEN}100%%${RESET}]\n" "$label"
     else
-      printf "${C_404_ERROR}❌${RESET} ${label} failed\n"
+      printf "${C_404_RED}✗${RESET} ${C_404_RED}%s failed (see %s)${RESET}\n" "$label" "$LOG_FILE"
       return $rc
     fi
     printf "\e[?25h"
@@ -265,21 +119,245 @@ channel404_progress() {
   fi
 }
 
+# Show banner
+show_404_banner
+
+# =================== Step 1: Telegram Config ===================
+show_step "01" "Telegram Configuration Setup"
+
+TELEGRAM_TOKEN="${TELEGRAM_TOKEN:-}"
+TELEGRAM_CHAT_IDS="${TELEGRAM_CHAT_IDS:-${TELEGRAM_CHAT_ID:-}}"
+
+if [[ ( -z "${TELEGRAM_TOKEN}" || -z "${TELEGRAM_CHAT_IDS}" ) && -f .env ]]; then
+  set -a; source ./.env; set +a
+  show_info "Loaded configuration from .env file"
+fi
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🔑 Telegram Bot Configuration${RESET}                      ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+read -rp "${C_404_GREEN}🤖 Enter Telegram Bot Token:${RESET} " _tk || true
+[[ -n "${_tk:-}" ]] && TELEGRAM_TOKEN="$_tk"
+if [[ -z "${TELEGRAM_TOKEN:-}" ]]; then
+  show_warning "Telegram token is empty. Deployment will continue without notifications."
+else
+  show_success "Telegram token configured"
+fi
+
+read -rp "${C_404_GREEN}👤 Enter Owner/Channel Chat ID(s):${RESET} " _ids || true
+[[ -n "${_ids:-}" ]] && TELEGRAM_CHAT_IDS="${_ids// /}"
+
+DEFAULT_LABEL="Join CHANNEL 404"
+DEFAULT_URL="https://t.me/premium_channel_404"
+BTN_LABELS=(); BTN_URLS=()
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🔘 Inline Button Configuration (Optional)${RESET}            ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+read -rp "${C_404_GREEN}➕ Add URL button(s)? [y/N]:${RESET} " _addbtn || true
+if [[ "${_addbtn:-}" =~ ^([yY]|yes)$ ]]; then
+  i=0
+  while true; do
+    printf "\n${C_404_GRAY}── Button $((i+1)) ──${RESET}\n"
+    read -rp "${C_404_GREEN}🔖 Label [default: ${DEFAULT_LABEL}]:${RESET} " _lbl || true
+    if [[ -z "${_lbl:-}" ]]; then
+      BTN_LABELS+=("${DEFAULT_LABEL}")
+      BTN_URLS+=("${DEFAULT_URL}")
+      show_success "Added: ${DEFAULT_LABEL} → ${DEFAULT_URL}"
+    else
+      read -rp "${C_404_GREEN}🔗 URL (http/https):${RESET} " _url || true
+      if [[ -n "${_url:-}" && "${_url}" =~ ^https?:// ]]; then
+        BTN_LABELS+=("${_lbl}")
+        BTN_URLS+=("${_url}")
+        show_success "Added: ${_lbl} → ${_url}"
+      else
+        show_warning "Skipped (invalid or empty URL)"
+      fi
+    fi
+    i=$(( i + 1 ))
+    (( i >= 3 )) && break
+    read -rp "${C_404_GREEN}➕ Add another button? [y/N]:${RESET} " _more || true
+    [[ "${_more:-}" =~ ^([yY]|yes)$ ]] || break
+  done
+fi
+
+CHAT_ID_ARR=()
+IFS=',' read -r -a CHAT_ID_ARR <<< "${TELEGRAM_CHAT_IDS:-}" || true
+
+json_escape(){ printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+
+tg_send(){
+  local text="$1" RM=""
+  if [[ -z "${TELEGRAM_TOKEN:-}" || ${#CHAT_ID_ARR[@]} -eq 0 ]]; then return 0; fi
+  if (( ${#BTN_LABELS[@]} > 0 )); then
+    local L1 U1 L2 U2 L3 U3
+    [[ -n "${BTN_LABELS[0]:-}" ]] && L1="$(json_escape "${BTN_LABELS[0]}")" && U1="$(json_escape "${BTN_URLS[0]}")"
+    [[ -n "${BTN_LABELS[1]:-}" ]] && L2="$(json_escape "${BTN_LABELS[1]}")" && U2="$(json_escape "${BTN_URLS[1]}")"
+    [[ -n "${BTN_LABELS[2]:-}" ]] && L3="$(json_escape "${BTN_LABELS[2]}")" && U3="$(json_escape "${BTN_URLS[2]}")"
+    if (( ${#BTN_LABELS[@]} == 1 )); then
+      RM="{\"inline_keyboard\":[[{\"text\":\"${L1}\",\"url\":\"${U1}\"}]]}"
+    elif (( ${#BTN_LABELS[@]} == 2 )); then
+      RM="{\"inline_keyboard\":[[{\"text\":\"${L1}\",\"url\":\"${U1}\"}],[{\"text\":\"${L2}\",\"url\":\"${U2}\"}]]}"
+    else
+      RM="{\"inline_keyboard\":[[{\"text\":\"${L1}\",\"url\":\"${U1}\"}],[{\"text\":\"${L2}\",\"url\":\"${U2}\"},{\"text\":\"${L3}\",\"url\":\"${U3}\"}]]}"
+    fi
+  fi
+  for _cid in "${CHAT_ID_ARR[@]}"; do
+    curl -s -S -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+      -d "chat_id=${_cid}" \
+      --data-urlencode "text=${text}" \
+      -d "parse_mode=HTML" \
+      ${RM:+--data-urlencode "reply_markup=${RM}"} >>"$LOG_FILE" 2>&1
+    show_success "Telegram notification sent → ${_cid}"
+  done
+}
+
+# =================== Step 2: Project ===================
+show_step "02" "GCP Project Configuration"
+
+PROJECT="$(gcloud config get-value project 2>/dev/null || true)"
+if [[ -z "$PROJECT" ]]; then
+  show_error "No active GCP project found."
+  show_info "Please run: ${C_404_CYAN}gcloud config set project <YOUR_PROJECT_ID>${RESET}"
+  exit 1
+fi
+
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')" || true
+show_success "Project loaded successfully"
+show_kv "Project ID:" "$PROJECT"
+show_kv "Project Number:" "$PROJECT_NUMBER"
+
+# =================== Step 3: Protocol ===================
+show_step "03" "Protocol Selection"
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}📡 Selected Protocol: VLESS WS${RESET}                         ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+PROTO="vless-ws"
+IMAGE="docker.io/nkka404/vless-ws:latest"
+
+show_success "Protocol: ${C_404_CYAN}VLESS WebSocket${RESET}"
+show_info "Docker Image: ${C_404_GRAY}$IMAGE${RESET}"
+echo "[Docker Image] ${IMAGE}" >>"$LOG_FILE"
+
+# =================== Step 4: Region ===================
+show_step "04" "Region Selection"
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🌍 Select Deployment Region${RESET}                            ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+echo "  1) ${C_404_BLUE}🇸🇬 Singapore${RESET} (asia-southeast1) - ${C_404_GREEN}Recommended${RESET}"
+echo "  2) ${C_404_BLUE}🇺🇸 United States${RESET} (us-central1)"
+echo "  3) ${C_404_BLUE}🇮🇩 Indonesia${RESET} (asia-southeast2)"
+echo "  4) ${C_404_BLUE}🇯🇵 Japan${RESET} (asia-northeast1)"
+echo "  5) ${C_404_BLUE}🇪🇺 Belgium${RESET} (europe-west1)"
+echo "  6) ${C_404_BLUE}🇮🇳 India${RESET} (asia-south1)"
+printf "\n"
+
+read -rp "${C_404_GREEN}Choose region [1-6, default 1]:${RESET} " _r || true
+case "${_r:-1}" in
+  2) REGION="us-central1" ;;
+  3) REGION="asia-southeast2" ;;
+  4) REGION="asia-northeast1" ;;
+  5) REGION="europe-west1" ;;
+  6) REGION="asia-south1" ;;
+  *) REGION="asia-southeast1" ;;
+esac
+
+show_success "Selected Region: ${C_404_CYAN}$REGION${RESET}"
+
+# =================== Step 5: Resources ===================
+show_step "05" "Resource Configuration"
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}⚙️ Compute Resources${RESET}                                  ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+read -rp "${C_404_GREEN}CPU Cores [1/2/4/6, default 2]:${RESET} " _cpu || true
+CPU="${_cpu:-2}"
+
+printf "\n${C_404_GRAY}Available Memory Options:${RESET}\n"
+echo "  ${C_404_GRAY}•${RESET} 512Mi  ${C_404_GRAY}•${RESET} 1Gi    ${C_404_GRAY}•${RESET} 2Gi (Recommended)"
+echo "  ${C_404_GRAY}•${RESET} 4Gi    ${C_404_GRAY}•${RESET} 8Gi    ${C_404_GRAY}•${RESET} 16Gi"
+printf "\n"
+
+read -rp "${C_404_GREEN}Memory [default 2Gi]:${RESET} " _mem || true
+MEMORY="${_mem:-2Gi}"
+
+show_success "Resource Configuration"
+show_kv "CPU Cores:" "$CPU"
+show_kv "Memory:" "$MEMORY"
+
+# =================== Step 6: Service Name ===================
+show_step "06" "Service Configuration"
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🪪 Service Details${RESET}                                    ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+SERVICE="${SERVICE:-channel404-vless}"
+TIMEOUT="${TIMEOUT:-3600}"
+PORT="${PORT:-8080}"
+
+read -rp "${C_404_GREEN}Service Name [default: ${SERVICE}]:${RESET} " _svc || true
+SERVICE="${_svc:-$SERVICE}"
+
+show_success "Service Configuration"
+show_kv "Service Name:" "$SERVICE"
+show_kv "Port:" "$PORT"
+show_kv "Timeout:" "${TIMEOUT}s"
+
+# =================== Step 7: Timezone Setup ===================
+show_step "07" "Deployment Schedule"
+
+export TZ="Asia/Yangon"
+START_EPOCH="$(date +%s)"
+END_EPOCH="$(( START_EPOCH + 5*3600 ))"
+fmt_dt(){ date -d @"$1" "+%d.%m.%Y %I:%M %p"; }
+START_LOCAL="$(fmt_dt "$START_EPOCH")"
+END_LOCAL="$(fmt_dt "$END_EPOCH")"
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🕒 Deployment Time${RESET}                                    ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+show_kv "Start Time:" "$START_LOCAL"
+show_kv "End Time:" "$END_LOCAL"
+show_kv "Timezone:" "Asia/Yangon"
+show_info "Deployment will complete within 5 minutes"
+
 # =================== Step 8: Enable APIs ===================
-channel404_section "GOOGLE CLOUD SETUP"
-channel404_step "08" "Enabling Required APIs"
+show_step "08" "GCP API Enablement"
 
-channel404_progress "Enabling Cloud Run API" \
-  gcloud services enable run.googleapis.com --quiet
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🔧 Enabling Required APIs${RESET}                             ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
 
-channel404_progress "Enabling Cloud Build API" \
-  gcloud services enable cloudbuild.googleapis.com --quiet
+run_with_progress "Enabling Cloud Run & Cloud Build APIs" \
+  gcloud services enable run.googleapis.com cloudbuild.googleapis.com --quiet
 
-# =================== Step 9: Deployment ===================
-channel404_section "DEPLOYMENT PROCESS"
-channel404_step "09" "Deploying VLESS WS Service"
+show_success "All required APIs enabled"
 
-channel404_progress "Deploying ${SERVICE} to ${REGION}" \
+# =================== Step 9: Deploy ===================
+show_step "09" "Cloud Run Deployment"
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🚀 Deploying VLESS WS Service${RESET}                         ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+show_info "Deployment Configuration Summary:"
+show_kv "Protocol:" "VLESS WS"
+show_kv "Region:" "$REGION"
+show_kv "Service:" "$SERVICE"
+show_kv "Resources:" "${CPU} vCPU / ${MEMORY}"
+show_kv "Image:" "${C_404_GRAY}docker.io/nkka404/vless-ws:latest${RESET}"
+printf "\n"
+
+run_with_progress "Deploying ${SERVICE} to Cloud Run" \
   gcloud run deploy "$SERVICE" \
     --image="$IMAGE" \
     --platform=managed \
@@ -293,94 +371,87 @@ channel404_progress "Deploying ${SERVICE} to ${REGION}" \
     --min-instances=1 \
     --quiet
 
-# =================== Result ===================
-channel404_section "DEPLOYMENT RESULTS"
-channel404_step "10" "Service Information"
+# =================== Step 10: Result ===================
+show_step "10" "Deployment Result"
 
 PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')" || true
 CANONICAL_HOST="${SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
 URL_CANONICAL="https://${CANONICAL_HOST}"
 
-printf "\n"
-channel404_divider
-channel404_box "${C_404_SUCCESS}🚀 DEPLOYMENT SUCCESSFUL${RESET}"
-channel404_box ""
-channel404_box "${C_404_SECONDARY}🌐 Service URL:${RESET}"
-channel404_box "  ${C_404_ACCENT}${URL_CANONICAL}${RESET}"
-channel404_box ""
-channel404_box "${C_404_SECONDARY}⚡ Protocol:${RESET} VLESS WebSocket (WS)"
-channel404_box "${C_404_SECONDARY}🏷️  Region:${RESET} ${REGION}"
-channel404_box "${C_404_SECONDARY}💾 Resources:${RESET} ${CPU} vCPU / ${MEMORY}"
-channel404_divider_end
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}✅ Deployment Successful${RESET}                               ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+show_success "VLESS WS Service is now running!"
+show_divider
+
+printf "\n${C_404_GREEN}${BOLD}📡 SERVICE ENDPOINT:${RESET}\n"
+printf "   ${C_404_CYAN}${BOLD}%s${RESET}\n\n" "${URL_CANONICAL}"
 
 # =================== VLESS Configuration ===================
 VLESS_UUID="ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
-VLESS_URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2F%40nkka404&security=tls&encryption=none&host=${CANONICAL_HOST}&type=ws#CHANNEL-404-VLESS-WS"
+URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2F%40nkka404&security=tls&encryption=none&host=${CANONICAL_HOST}&type=ws&sni=vpn.googleapis.com#CHANNEL-404-VLESS-WS"
 
-printf "\n${C_404_SECONDARY}🔑 VLESS Configuration URI:${RESET}\n"
-channel404_divider
-channel404_box "${VLESS_URI}"
-channel404_divider_end
+printf "${C_404_GREEN}${BOLD}🔑 VLESS CONFIGURATION:${RESET}\n"
+printf "   ${C_404_CYAN}%s${RESET}\n\n" "${URI}"
+
+printf "${C_404_GREEN}${BOLD}📋 CONFIGURATION DETAILS:${RESET}\n"
+show_kv "UUID:" "$VLESS_UUID"
+show_kv "Host:" "vpn.googleapis.com"
+show_kv "Port:" "443"
+show_kv "Path:" "/@nkka404"
+show_kv "Security:" "TLS"
+show_kv "Transport:" "WebSocket"
+show_kv "SNI:" "vpn.googleapis.com"
+show_divider
+
+# =================== QR Code Display ===================
+printf "\n${C_404_GREEN}${BOLD}📱 QR CODE (Scan with V2Ray client):${RESET}\n"
+show_info "Generating QR code for quick configuration..."
+echo "[QR Code URL: $URI]" >> "$LOG_FILE"
 
 # =================== Telegram Notification ===================
-json_escape(){ printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+show_step "11" "Telegram Notification"
 
-tg_send(){
-  local text="$1"
-  if [[ -z "${TELEGRAM_TOKEN:-}" || ${#CHAT_ID_ARR[@]} -eq 0 ]]; then return 0; fi
-  
-  local TELEGRAM_MSG=$(cat <<EOF
-✅ <b>VLESS WS Deployed Successfully</b>
-━━━━━━━━━━━━━━━━━━
-<blockquote>🚀 <b>Service:</b> ${SERVICE}
-🌍 <b>Region:</b> ${REGION}
-⚡ <b>Protocol:</b> VLESS WebSocket
-💾 <b>Resources:</b> ${CPU} vCPU / ${MEMORY}</blockquote>
-🔗 <b>Service URL:</b>
-<code>${URL_CANONICAL}</code>
-
+MSG=$(cat <<EOF
+✅ <b>CHANNEL 404 — VLESS WS Deployment Success</b>
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+<blockquote>🌍 <b>Region:</b> ${REGION}
+📡 <b>Protocol:</b> VLESS WebSocket
+🔗 <b>Endpoint:</b> <a href="${URL_CANONICAL}">${URL_CANONICAL}</a>
+⚙️ <b>Resources:</b> ${CPU} vCPU / ${MEMORY}</blockquote>
 🔑 <b>VLESS Configuration:</b>
-<pre><code>${VLESS_URI}</code></pre>
-
+<pre><code>${URI}</code></pre>
 <blockquote>🕒 <b>Deployed:</b> ${START_LOCAL}
-⏳ <b>Valid Until:</b> ${END_LOCAL}</blockquote>
-━━━━━━━━━━━━━━━━━━
-#CloudRun #VLESS #Channel404
+⏳ <b>Expires:</b> ${END_LOCAL}</blockquote>
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+<b>Powered by CHANNEL 404</b>
 EOF
-  )
-  
-  for _cid in "${CHAT_ID_ARR[@]}"; do
-    curl -s -S -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
-      -d "chat_id=${_cid}" \
-      --data-urlencode "text=${TELEGRAM_MSG}" \
-      -d "parse_mode=HTML" >>"$LOG_FILE" 2>&1 && \
-    channel404_status "✅" "Telegram sent → ${_cid}"
-  done
-}
+)
 
-channel404_section "NOTIFICATION"
-channel404_step "11" "Sending Telegram Notification"
-
-if [[ -n "${TELEGRAM_TOKEN:-}" && ${#CHAT_ID_ARR[@]} -gt 0 ]]; then
-  channel404_progress "Sending Telegram notification" tg_send
-  channel404_status "✅" "Telegram notification sent"
-else
-  channel404_status "⚠️" "Telegram notification skipped"
-fi
+tg_send "${MSG}"
+show_success "Telegram notification sent successfully"
 
 # =================== Final Output ===================
-printf "\n"
-channel404_divider
-channel404_box "${C_404_SUCCESS}✨ DEPLOYMENT COMPLETE ✨${RESET}"
-channel404_box ""
-channel404_box "${C_404_SECONDARY}📊 Summary:${RESET}"
-channel404_box "• VLESS WebSocket service deployed"
-channel404_box "• Warm instance enabled (min=1)"
-channel404_box "• Cold start prevention active"
-channel404_box "• Auto-scaling configured"
-channel404_box ""
-channel404_box "${C_404_WARNING}💡 Tip:${RESET} Use with CDN for better performance"
-channel404_divider_end
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}✨ DEPLOYMENT COMPLETE${RESET}                                ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
 
-printf "\n${C_404_GREY}📄 Log file: ${LOG_FILE}${RESET}\n"
-printf "${C_404_GREY}🔧 Support: @premium_channel_404${RESET}\n\n"
+show_success "VLESS WS service deployed successfully!"
+show_info "Service URL: ${C_404_CYAN}${URL_CANONICAL}${RESET}"
+show_info "Configuration saved to log file"
+show_kv "Log File:" "$LOG_FILE"
+show_kv "Service Name:" "$SERVICE"
+show_kv "Region:" "$REGION"
+
+printf "\n${C_404_PURPLE}${BOLD}💡 IMPORTANT NOTES:${RESET}\n"
+echo "  ${C_404_GRAY}•${RESET} Service is configured with ${C_404_GREEN}warm instances${RESET} (min-instances=1)"
+echo "  ${C_404_GRAY}•${RESET} ${C_404_GREEN}No cold start${RESET} delays for initial connections"
+echo "  ${C_404_GRAY}•${RESET} Configured for ${C_404_GREEN}high concurrency${RESET} (1000 concurrent requests)"
+echo "  ${C_404_GRAY}•${RESET} ${C_404_GREEN}Publicly accessible${RESET} via the endpoint"
+echo "  ${C_404_GRAY}•${RESET} Auto-scales based on traffic demand"
+printf "\n"
+
+show_divider
+printf "\n${C_404_RED}${BOLD}4 0 4${RESET} ${C_404_GRAY}|${RESET} ${C_404_CYAN}VLESS WebSocket Deployment System${RESET} ${C_404_GRAY}|${RESET} ${C_404_GREEN}v2.0${RESET}\n"
+printf "${C_404_GRAY}──────────────────────────────────────────────────────────${RESET}\n\n"
