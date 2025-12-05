@@ -329,8 +329,8 @@ tg_send(){
   local text="$1"
   if [[ -z "${TELEGRAM_TOKEN:-}" || ${#CHAT_ID_ARR[@]} -eq 0 ]]; then return 0; fi
   
-  local MSG=$(cat <<EOF
-✅ <b>CHANNEL 404 - VLESS WS Deployed Successfully</b>
+  local TELEGRAM_MSG=$(cat <<EOF
+✅ <b>VLESS WS Deployed Successfully</b>
 ━━━━━━━━━━━━━━━━━━
 <blockquote>🚀 <b>Service:</b> ${SERVICE}
 🌍 <b>Region:</b> ${REGION}
@@ -352,8 +352,9 @@ EOF
   for _cid in "${CHAT_ID_ARR[@]}"; do
     curl -s -S -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
       -d "chat_id=${_cid}" \
-      --data-urlencode "text=${MSG}" \
-      -d "parse_mode=HTML" >>"$LOG_FILE" 2>&1
+      --data-urlencode "text=${TELEGRAM_MSG}" \
+      -d "parse_mode=HTML" >>"$LOG_FILE" 2>&1 && \
+    channel404_status "✅" "Telegram sent → ${_cid}"
   done
 }
 
@@ -361,7 +362,7 @@ channel404_section "NOTIFICATION"
 channel404_step "11" "Sending Telegram Notification"
 
 if [[ -n "${TELEGRAM_TOKEN:-}" && ${#CHAT_ID_ARR[@]} -gt 0 ]]; then
-  channel404_progress "Sending Telegram notification" tg_send "${MSG}"
+  channel404_progress "Sending Telegram notification" tg_send
   channel404_status "✅" "Telegram notification sent"
 else
   channel404_status "⚠️" "Telegram notification skipped"
