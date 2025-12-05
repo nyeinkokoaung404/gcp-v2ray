@@ -1,14 +1,27 @@
-FROM teddysun/v2ray:latest
+FROM alpine:latest
 
-# Expose the correct container port (8080)
+# Install dependencies
+RUN apk add --no-cache \
+    bash \
+    curl \
+    wget \
+    unzip
+
+# Download and install v2ray
+RUN wget https://github.com/v2fly/v2ray-core/releases/download/v5.7.0/v2ray-linux-64.zip && \
+    unzip v2ray-linux-64.zip && \
+    rm v2ray-linux-64.zip && \
+    chmod +x v2ray
+
+# Copy config file
+COPY config.json .
+
+# Expose port (Cloud Run requires this)
 EXPOSE 8080
 
-# Copy the VLESS config into the container
-COPY config.json /etc/v2ray/config.json
+# Health check and start
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/ || exit 1
 
-# Run V2Ray with the config file
-CMD ["v2ray", "run", "-config", "/etc/v2ray/config.json"]
-
-
-# join telegram https://t.me/premium_channel_404  for new updates 
-# my telegram username is @nkka404
+# Start v2ray on port 8080
+CMD ["./v2ray", "run", "-config", "config.json"]
