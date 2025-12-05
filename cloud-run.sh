@@ -28,7 +28,8 @@ if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   C_404_GREEN=$'\e[38;5;46m'     # Bright Green
   C_404_YELLOW=$'\e[38;5;226m'   # Bright Yellow
   C_404_PURPLE=$'\e[38;5;93m'    # Purple
-  C_404_GRAY=$'\e[38;5;245m'     # Gray
+  #C_404_GRAY=$'\e[38;5;245m'     # Gray
+  C_404_GRAY=$'\e[38;5;214m'     # Orange
   C_404_CYAN=$'\e[38;5;51m'      # Cyan
 else
   RESET= BOLD= C_404_RED= C_404_BLUE= C_404_GREEN= C_404_YELLOW= C_404_PURPLE= C_404_GRAY= C_404_CYAN=
@@ -390,7 +391,7 @@ printf "   ${C_404_CYAN}${BOLD}%s${RESET}\n\n" "${URL_CANONICAL}"
 
 # =================== VLESS Configuration ===================
 VLESS_UUID="ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
-URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2F%40nkka404&security=tls&encryption=none&host=${CANONICAL_HOST}&type=ws&sni=vpn.googleapis.com#CHANNEL-404-VLESS-WS"
+URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2F%40nkka404&security=tls&encryption=none&host=${CANONICAL_HOST}&type=ws&sni=${CANONICAL_HOST}#CHANNEL-404-VLESS-WS"
 
 printf "${C_404_GREEN}${BOLD}🔑 VLESS CONFIGURATION:${RESET}\n"
 printf "   ${C_404_CYAN}%s${RESET}\n\n" "${URI}"
@@ -402,7 +403,7 @@ show_kv "Port:" "443"
 show_kv "Path:" "/@nkka404"
 show_kv "Security:" "TLS"
 show_kv "Transport:" "WebSocket"
-show_kv "SNI:" "vpn.googleapis.com"
+show_kv "SNI:" "${CANONICAL_HOST}"
 show_divider
 
 # =================== QR Code Display ===================
