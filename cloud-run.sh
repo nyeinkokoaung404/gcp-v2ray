@@ -48,7 +48,7 @@ show_404_banner() {
   printf "║    ${C_404_CYAN}  \|_____|\  \       \ \  \/\  \       \|_____|\  \                           \n"
   printf "║    ${C_404_CYAN}         \ \__\       \ \_______\             \ \__\                          \n"
   printf "║    ${C_404_CYAN}          \|__|        \|_______|              \|__|                          \n"
-  printf "║                                                                  ║\n"
+  printf "║                                                                                               \n"
   printf "║         ${C_404_YELLOW}🚀 VLESS WS DEPLOYMENT SYSTEM v2.0${C_404_RED}                         \n"
   printf "║         ${C_404_GREEN}⚡ Powered by CHANNEL 404${C_404_RED}                                   \n"
   printf "║                                                                                               \n"
