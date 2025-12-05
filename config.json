@@ -11,8 +11,7 @@
       "settings": {
         "clients": [
           {
-            "id": "ba0e3984-ccc9-48a3-8074-b2f507f41ce8",
-            "flow": ""
+            "id": "ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
           }
         ],
         "decryption": "none"
@@ -21,8 +20,9 @@
         "network": "grpc",
         "security": "none",
         "grpcSettings": {
-          "serviceName": "@nkka404",
-          "multiMode": true
+          "authority": "",
+          "multiMode": false,
+          "serviceName": "@nkka404"
         }
       }
     }
