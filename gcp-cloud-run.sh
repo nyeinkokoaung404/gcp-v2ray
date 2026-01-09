@@ -250,8 +250,8 @@ printf "\n${C_404_YELLOW}┌─────────────────�
 printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🌍 Select Deployment Region${RESET}                            ${C_404_YELLOW}│${RESET}\n"
 printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
 
-echo "  1) ${C_404_BLUE}🇸🇬 Singapore${RESET} (asia-southeast1) - ${C_404_GREEN}Recommended${RESET}"
-echo "  2) ${C_404_BLUE}🇺🇸 United States${RESET} (us-central1)"
+echo "  1) ${C_404_BLUE}🇺🇸 United States${RESET} (us-central1) - ${C_404_GREEN}Recommended${RESET}"
+echo "  2) ${C_404_BLUE}🇸🇬 Singapore${RESET} (asia-southeast1)"
 echo "  3) ${C_404_BLUE}🇮🇩 Indonesia${RESET} (asia-southeast2)"
 echo "  4) ${C_404_BLUE}🇯🇵 Japan${RESET} (asia-northeast1)"
 echo "  5) ${C_404_BLUE}🇪🇺 Belgium${RESET} (europe-west1)"
@@ -260,7 +260,7 @@ printf "\n"
 
 read -rp "${C_404_GREEN}Choose region [1-6, default 1]:${RESET} " _r || true
 case "${_r:-1}" in
-  2) REGION="us-central1" ;;
+  2) REGION="asia-southeast1" ;;
   3) REGION="asia-southeast2" ;;
   4) REGION="asia-northeast1" ;;
   5) REGION="europe-west1" ;;
