@@ -266,7 +266,7 @@ case "${_r:-1}" in
   4) REGION="asia-northeast1" ;;
   5) REGION="europe-west1" ;;
   6) REGION="asia-south1" ;;
-  *) REGION="asia-southeast1" ;;
+  *) REGION="us-central1" ;;
 esac
 
 show_success "Selected Region: ${C_404_CYAN}$REGION${RESET}"
