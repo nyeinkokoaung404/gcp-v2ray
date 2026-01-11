@@ -11,7 +11,9 @@
       "settings": {
         "clients": [
           {
-            "id": "ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
+            "id": "ba0e3984-ccc9-48a3-8074-b2f507f41ce8",
+            "level": 0,
+            "email": "channel404@req"
           }
         ],
         "decryption": "none"
