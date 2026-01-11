@@ -1,4 +1,4 @@
-name: Build and Push V2Ray VLESS-GRPC to Docker Hub
+name: Build VLESS-GRPC to Docker Hub
 
 on:
   push:
