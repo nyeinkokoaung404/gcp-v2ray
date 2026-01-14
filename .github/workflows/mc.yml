@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: vless-ws
+  IMAGE_NAME: gcp-vless-ws
 
 jobs:
   build-and-push:
