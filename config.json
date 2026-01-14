@@ -20,7 +20,7 @@
       "streamSettings": {
         "network": "ws",
         "wsSettings": {
-          "path": "/htetaung-mc",
+          "path": "/@nkka404",
           "headers": {
             "Host": ""
           }
