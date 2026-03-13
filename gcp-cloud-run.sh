@@ -16,6 +16,17 @@ on_err() {
   echo "—— LOG (last 80 lines) ——" >&2
   tail -n 80 "$LOG_FILE" >&2 || true
   echo "📄 Log File: $LOG_FILE" >&2
+  
+  # Show specific error for deployment failure
+  if [[ "${BASH_COMMAND}" == *"gcloud run deploy"* ]]; then
+    echo "🔍 Cloud Run Deployment Failed! Possible reasons:" >&2
+    echo "   • Cloud Run API not enabled" >&2
+    echo "   • Insufficient permissions" >&2
+    echo "   • Region not supported" >&2
+    echo "   • Image not found: docker.io/nkka404/vless-ws:latest" >&2
+    echo "   • Quota exceeded" >&2
+  fi
+  
   exit $rc
 }
 trap on_err ERR
@@ -35,7 +46,6 @@ else
 fi
 
 # =================== CHANNEL 404 Banner ===================
-
 show_404_banner() {
   clear
   printf "\n\n"
@@ -92,30 +102,58 @@ show_kv() {
 # =================== Progress Spinner ===================
 run_with_progress() {
   local label="$1"; shift
-  ( "$@" ) >>"$LOG_FILE" 2>&1 &
-  local pid=$!
-  local pct=5
+  local cmd_output
+  local temp_file=$(mktemp)
   
   if [[ -t 1 ]]; then
     printf "\e[?25l"
+    # Run command and capture output
+    ("$@" 2>&1 | tee "$temp_file") >>"$LOG_FILE" 2>&1 &
+    local pid=$!
+    local pct=5
+    
     while kill -0 "$pid" 2>/dev/null; do
       local step=$(( (RANDOM % 9) + 2 ))
       pct=$(( pct + step ))
       (( pct > 95 )) && pct=95
       printf "\r${C_404_PURPLE}⟳${RESET} ${C_404_CYAN}%s...${RESET} [${C_404_YELLOW}%s%%${RESET}]" "$label" "$pct"
+      
+      # Check if there's any error in output
+      if grep -i "error\|failed\|denied" "$temp_file" 2>/dev/null | grep -v "grep" | head -1; then
+        break
+      fi
+      
       sleep "$(awk -v r=$RANDOM 'BEGIN{s=0.08+(r%7)/100; printf "%.2f", s }')"
     done
-    wait "$pid"; local rc=$?
+    
+    wait "$pid" 2>/dev/null || true
+    local rc=$?
     printf "\r"
-    if (( rc==0 )); then
+    
+    # Check for errors in output
+    if grep -qi "error\|failed\|denied\|permission" "$temp_file"; then
+      printf "${C_404_RED}✗${RESET} ${C_404_RED}%s failed${RESET}\n" "$label"
+      cat "$temp_file" | grep -i "error\|failed\|denied\|permission" | head -3 | while read line; do
+        echo "   ${C_404_RED}→${RESET} $line"
+      done
+      rm -f "$temp_file"
+      printf "\e[?25h"
+      return 1
+    elif (( rc==0 )); then
       printf "${C_404_GREEN}✓${RESET} ${C_404_GREEN}%s...${RESET} [${C_404_GREEN}100%%${RESET}]\n" "$label"
     else
-      printf "${C_404_RED}✗${RESET} ${C_404_RED}%s failed (see %s)${RESET}\n" "$label" "$LOG_FILE"
+      printf "${C_404_RED}✗${RESET} ${C_404_RED}%s failed (exit $rc)${RESET}\n" "$label"
+      tail -5 "$temp_file" | while read line; do
+        echo "   ${C_404_RED}→${RESET} $line"
+      done
+      rm -f "$temp_file"
+      printf "\e[?25h"
       return $rc
     fi
+    rm -f "$temp_file"
     printf "\e[?25h"
   else
-    wait "$pid"
+    "$@" >>"$LOG_FILE" 2>&1
   fi
 }
 
@@ -137,7 +175,7 @@ printf "\n${C_404_YELLOW}┌─────────────────�
 printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🔑 Telegram Bot Configuration${RESET}                      ${C_404_YELLOW}│${RESET}\n"
 printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
 
-read -rp "${C_404_GREEN}🤖 Enter Telegram Bot Token:${RESET} " _tk || true
+read -rp "${C_404_GREEN}🤖 Enter Telegram Bot Token (optional):${RESET} " _tk || true
 [[ -n "${_tk:-}" ]] && TELEGRAM_TOKEN="$_tk"
 if [[ -z "${TELEGRAM_TOKEN:-}" ]]; then
   show_warning "Telegram token is empty. Deployment will continue without notifications."
@@ -145,7 +183,7 @@ else
   show_success "Telegram token configured"
 fi
 
-read -rp "${C_404_GREEN}👤 Enter Owner/Channel Chat ID(s):${RESET} " _ids || true
+read -rp "${C_404_GREEN}👤 Enter Owner/Channel Chat ID(s) (optional):${RESET} " _ids || true
 [[ -n "${_ids:-}" ]] && TELEGRAM_CHAT_IDS="${_ids// /}"
 
 DEFAULT_LABEL="Join CHANNEL 404"
@@ -209,7 +247,7 @@ tg_send(){
       -d "chat_id=${_cid}" \
       --data-urlencode "text=${text}" \
       -d "parse_mode=HTML" \
-      ${RM:+--data-urlencode "reply_markup=${RM}"} >>"$LOG_FILE" 2>&1
+      ${RM:+--data-urlencode "reply_markup=${RM}"} >>"$LOG_FILE" 2>&1 || true
     show_success "Telegram notification sent → ${_cid}"
   done
 }
@@ -221,6 +259,12 @@ PROJECT="$(gcloud config get-value project 2>/dev/null || true)"
 if [[ -z "$PROJECT" ]]; then
   show_error "No active GCP project found."
   show_info "Please run: ${C_404_CYAN}gcloud config set project <YOUR_PROJECT_ID>${RESET}"
+  exit 1
+fi
+
+# Check if project exists and is accessible
+if ! gcloud projects describe "$PROJECT" &>/dev/null; then
+  show_error "Project '$PROJECT' not found or not accessible"
   exit 1
 fi
 
@@ -306,6 +350,12 @@ PORT="${PORT:-8080}"
 read -rp "${C_404_GREEN}Service Name [default: ${SERVICE}]:${RESET} " _svc || true
 SERVICE="${_svc:-$SERVICE}"
 
+# Validate service name (Cloud Run requirements)
+if [[ ! "$SERVICE" =~ ^[a-z]([-a-z0-9]*[a-z0-9])?$ ]]; then
+  show_error "Invalid service name. Use lowercase letters, numbers, and hyphens only. Must start with letter and end with letter/number."
+  exit 1
+fi
+
 show_success "Service Configuration"
 show_kv "Service Name:" "$SERVICE"
 show_kv "Port:" "$PORT"
@@ -337,13 +387,57 @@ printf "\n${C_404_YELLOW}┌─────────────────�
 printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🔧 Enabling Required APIs${RESET}                             ${C_404_YELLOW}│${RESET}\n"
 printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
 
-run_with_progress "Enabling Cloud Run & Cloud Build APIs" \
-  gcloud services enable run.googleapis.com cloudbuild.googleapis.com --quiet
+# Check if APIs are already enabled
+APIS_TO_ENABLE=("run.googleapis.com" "cloudbuild.googleapis.com")
+for api in "${APIS_TO_ENABLE[@]}"; do
+  if ! gcloud services list --enabled --filter="config.name:$api" --format="value(config.name)" | grep -q "$api"; then
+    show_info "Enabling $api..."
+    run_with_progress "Enabling $api" gcloud services enable "$api" --quiet
+  else
+    show_success "$api already enabled"
+  fi
+done
 
 show_success "All required APIs enabled"
 
-# =================== Step 9: Deploy ===================
-show_step "09" "Cloud Run Deployment"
+# =================== Step 9: Pre-deployment Checks ===================
+show_step "09" "Pre-deployment Checks"
+
+printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
+printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🔍 Running Pre-deployment Checks${RESET}                       ${C_404_YELLOW}│${RESET}\n"
+printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
+
+# Check authentication
+if ! gcloud auth print-access-token &>/dev/null; then
+  show_error "Not authenticated. Please run: gcloud auth login"
+  exit 1
+fi
+show_success "Authentication valid"
+
+# Check if region is supported for Cloud Run
+if ! gcloud run regions list --format="value(locationId)" 2>/dev/null | grep -q "$REGION"; then
+  show_warning "Region $REGION might not support Cloud Run. Will attempt anyway."
+else
+  show_success "Region $REGION supports Cloud Run"
+fi
+
+# Check if service name already exists
+if gcloud run services describe "$SERVICE" --region="$REGION" --quiet &>/dev/null; then
+  show_warning "Service '$SERVICE' already exists in $REGION. It will be updated/replaced."
+else
+  show_success "Service name '$SERVICE' is available"
+fi
+
+# Test pulling the image (optional)
+show_info "Testing image availability..."
+if docker pull "$IMAGE" --quiet 2>/dev/null; then
+  show_success "Image $IMAGE is accessible"
+else
+  show_warning "Cannot pull image directly. Will attempt deployment anyway."
+fi
+
+# =================== Step 10: Deploy ===================
+show_step "10" "Cloud Run Deployment"
 
 printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
 printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}🚀 Deploying VLESS WS Service${RESET}                         ${C_404_YELLOW}│${RESET}\n"
@@ -357,26 +451,65 @@ show_kv "Resources:" "${CPU} vCPU / ${MEMORY}"
 show_kv "Image:" "${C_404_GRAY}docker.io/nkka404/vless-ws:latest${RESET}"
 printf "\n"
 
-run_with_progress "Deploying ${SERVICE} to Cloud Run" \
-  gcloud run deploy "$SERVICE" \
-    --image="$IMAGE" \
-    --platform=managed \
-    --region="$REGION" \
-    --memory="$MEMORY" \
-    --cpu="$CPU" \
-    --concurrency=1000 \
-    --timeout="$TIMEOUT" \
-    --allow-unauthenticated \
-    --port="$PORT" \
-    --min-instances=1 \
-    --quiet
+# Build deployment command
+DEPLOY_CMD=(
+  gcloud run deploy "$SERVICE"
+  --image="$IMAGE"
+  --platform=managed
+  --region="$REGION"
+  --memory="$MEMORY"
+  --cpu="$CPU"
+  --concurrency=1000
+  --timeout="$TIMEOUT"
+  --allow-unauthenticated
+  --port="$PORT"
+  --min-instances=1
+  --quiet
+)
 
-# =================== Step 10: Result ===================
-show_step "10" "Deployment Result"
+echo "[DEBUG] Running: ${DEPLOY_CMD[*]}" >> "$LOG_FILE"
 
-PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')" || true
-CANONICAL_HOST="${SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
-URL_CANONICAL="https://${CANONICAL_HOST}"
+# Run deployment with progress indicator and better error handling
+if ! run_with_progress "Deploying ${SERVICE} to Cloud Run" "${DEPLOY_CMD[@]}"; then
+  show_error "Deployment failed!"
+  
+  # Check specific error conditions
+  echo "=== Diagnostics ===" >&2
+  
+  # Check API
+  if ! gcloud services list --enabled | grep -q run.googleapis.com; then
+    show_error "Cloud Run API is not enabled"
+    run_with_progress "Enabling Cloud Run API" gcloud services enable run.googleapis.com
+  fi
+  
+  # Check quota/limits
+  show_info "Checking quotas..."
+  gcloud run regions list 2>/dev/null || show_warning "Cannot list regions"
+  
+  # Check permissions
+  if ! gcloud run services list --region="$REGION" --quiet &>/dev/null; then
+    show_error "Insufficient permissions to deploy to Cloud Run in $REGION"
+    show_info "Required roles: roles/run.admin or roles/run.developer"
+  fi
+  
+  # Show last 20 lines of log
+  echo "=== Last 20 lines of log ===" >&2
+  tail -20 "$LOG_FILE" >&2
+  
+  exit 1
+fi
+
+# =================== Step 11: Get Service URL ===================
+show_step "11" "Retrieving Service Information"
+
+# Get the actual URL after deployment
+SERVICE_URL=$(gcloud run services describe "$SERVICE" --region="$REGION" --format='value(status.url)' 2>/dev/null || true)
+
+if [[ -z "$SERVICE_URL" ]]; then
+  PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')" || true
+  CANONICAL_HOST="${SERVICE}-${PROJECT_NUMBER}.${REGION}.run.app"
+  SERVICE_URL="https://${CANONICAL_HOST}"
+fi
 
 printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
 printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}✅ Deployment Successful${RESET}                               ${C_404_YELLOW}│${RESET}\n"
@@ -386,11 +519,11 @@ show_success "VLESS WS Service is now running!"
 show_divider
 
 printf "\n${C_404_GREEN}${BOLD}📡 SERVICE ENDPOINT:${RESET}\n"
-printf "   ${C_404_CYAN}${BOLD}%s${RESET}\n\n" "${URL_CANONICAL}"
+printf "   ${C_404_CYAN}${BOLD}%s${RESET}\n\n" "${SERVICE_URL}"
 
 # =================== VLESS Configuration ===================
 VLESS_UUID="ba0e3984-ccc9-48a3-8074-b2f507f41ce8"
-URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2F%40nkka404&security=tls&encryption=none&host=${CANONICAL_HOST}&type=ws&sni=vpn.googleapis.com#CHANNEL-404-VLESS-WS"
+URI="vless://${VLESS_UUID}@vpn.googleapis.com:443?path=%2F%40nkka404&security=tls&encryption=none&host=$(basename ${SERVICE_URL#https://})&type=ws&sni=vpn.googleapis.com#CHANNEL-404-VLESS-WS"
 
 printf "${C_404_GREEN}${BOLD}🔑 VLESS CONFIGURATION:${RESET}\n"
 printf "   ${C_404_CYAN}%s${RESET}\n\n" "${URI}"
@@ -408,17 +541,31 @@ show_divider
 # =================== QR Code Display ===================
 printf "\n${C_404_GREEN}${BOLD}📱 QR CODE (Scan with V2Ray client):${RESET}\n"
 show_info "Generating QR code for quick configuration..."
+
+# Check if qrencode is installed
+if command -v qrencode &>/dev/null; then
+  qrencode -t ANSI256 "$URI" || show_warning "QR code generation failed"
+else
+  show_warning "qrencode not installed. Install with: apt-get install qrencode or brew install qrencode"
+  # Fallback to ASCII QR
+  if command -v curl &>/dev/null; then
+    curl -s "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${URI}" -o /tmp/qr.png 2>/dev/null && \
+    show_info "QR saved to /tmp/qr.png" || true
+  fi
+fi
+
 echo "[QR Code URL: $URI]" >> "$LOG_FILE"
 
 # =================== Telegram Notification ===================
-show_step "11" "Telegram Notification"
+show_step "12" "Telegram Notification"
 
-MSG=$(cat <<EOF
+if [[ -n "${TELEGRAM_TOKEN:-}" && ${#CHAT_ID_ARR[@]} -gt 0 ]]; then
+  MSG=$(cat <<EOF
 ✅ <b>VLESS WS Deployment Success</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 <blockquote>🌍 <b>Region:</b> ${REGION}
 📡 <b>Protocol:</b> VLESS WebSocket
-🔗 <b>Endpoint:</b> <a href="${URL_CANONICAL}">${URL_CANONICAL}</a>
+🔗 <b>Endpoint:</b> <a href="${SERVICE_URL}">${SERVICE_URL}</a>
 ⚙️ <b>Resources:</b> ${CPU} vCPU / ${MEMORY}</blockquote>
 🔑 <b>VLESS Configuration:</b>
 <pre><code>${URI}</code></pre>
@@ -429,8 +576,11 @@ MSG=$(cat <<EOF
 EOF
 )
 
-tg_send "${MSG}"
-show_success "Telegram notification sent successfully"
+  tg_send "${MSG}"
+  show_success "Telegram notification sent successfully"
+else
+  show_info "Telegram notifications not configured, skipping..."
+fi
 
 # =================== Final Output ===================
 printf "\n${C_404_YELLOW}┌──────────────────────────────────────────────────────┐${RESET}\n"
@@ -438,7 +588,7 @@ printf "${C_404_YELLOW}│${RESET} ${C_404_CYAN}✨ DEPLOYMENT COMPLETE${RESET} 
 printf "${C_404_YELLOW}└──────────────────────────────────────────────────────┘${RESET}\n\n"
 
 show_success "VLESS WS service deployed successfully!"
-show_info "Service URL: ${C_404_CYAN}${URL_CANONICAL}${RESET}"
+show_info "Service URL: ${C_404_CYAN}${SERVICE_URL}${RESET}"
 show_info "Configuration saved to log file"
 show_kv "Log File:" "$LOG_FILE"
 show_kv "Service Name:" "$SERVICE"
@@ -453,5 +603,15 @@ echo "  ${C_404_GRAY}•${RESET} Auto-scales based on traffic demand"
 printf "\n"
 
 show_divider
-printf "\n${C_404_RED}${BOLD}4 0 4${RESET} ${C_404_GRAY}|${RESET} ${C_404_CYAN}VLESS WebSocket Deployment System${RESET} ${C_404_GRAY}|${RESET} ${C_404_GREEN}v2.0${RESET}\n"
+printf "\n${C_404_RED}${BOLD}4 0 4${RESET} ${C_404_GRAY}|${RESET} ${C_404_CYAN}VLESS WebSocket Deployment System${RESET} ${C_404_GRAY}|${RESET} ${C_404_GREEN}v2.1${RESET}\n"
 printf "${C_404_GRAY}──────────────────────────────────────────────────────────${RESET}\n\n"
+
+# =================== Test Connection ===================
+printf "\n${C_404_CYAN}${BOLD}Testing deployment...${RESET}\n"
+if command -v curl &>/dev/null; then
+  if curl -s -o /dev/null -w "%{http_code}" "$SERVICE_URL" 2>/dev/null | grep -q "200\|403\|401"; then
+    show_success "Service is responding"
+  else
+    show_warning "Service might not be ready yet. Wait a few seconds and try accessing: $SERVICE_URL"
+  fi
+fi
